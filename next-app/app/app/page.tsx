@@ -7,7 +7,6 @@ import { fromZodError } from "zod-validation-error";
 import { stringify } from "querystring";
 import { AppDataContext } from "../_lib/useUserData";
 import { createProject } from "../_lib/api";
-import AccountButton from "../_components/AccountButton";
 import { CenterContainer } from "../_components/CenterContainer";
 import { SecondaryListItemButton, ListItemButton } from "../_components/listItems";
 import SubmitCancel from "../_components/SubmitCancel";
@@ -112,7 +111,6 @@ export default function Home() {
 		<CenterContainer>
 			<ProjectList />
 			<CreateProjectButton />
-			<AccountButton />
 		</CenterContainer>
 	);
 }

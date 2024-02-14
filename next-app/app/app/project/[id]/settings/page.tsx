@@ -1,5 +1,4 @@
 "use client";
-import AccountButton from "@/app/_components/AccountButton";
 import { CenterContainer } from "@/app/_components/CenterContainer";
 import Title from "@/app/_components/Title";
 import { DeleteListItem, ListItem, ListItemButton } from "@/app/_components/listItems";
@@ -45,7 +44,6 @@ export default function Page() {
 					<Title>{project.name} Settings</Title>
 					<DeleteProject id={project.id} />
 					<BackComponent id={project.id} />
-					<AccountButton />
 				</CenterContainer>
 			)}
 		</ProjectContext.Consumer>

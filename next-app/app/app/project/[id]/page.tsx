@@ -1,5 +1,4 @@
 "use client";
-import AccountButton from "@/app/_components/AccountButton";
 import { CenterContainer } from "@/app/_components/CenterContainer";
 import ProjectSettingsButton from "@/app/_components/ProjectSettingsButton";
 import { TaskList } from "@/app/_components/TaskList";
@@ -18,7 +17,6 @@ export default function Page() {
 						editTask={(e) => sync.emit(["editTask", e])}
 						deleteTask={(e) => sync.emit(["deleteTask", e])}
 					></TaskList>
-					<AccountButton />
 					<ProjectSettingsButton id={project.id} />
 				</CenterContainer>
 			)}
