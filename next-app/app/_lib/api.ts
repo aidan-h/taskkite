@@ -4,7 +4,7 @@ import { SharedProject } from "./useUserData";
 export async function getData<T, D>(url: string, data: D): Promise<T> {
 	const resp = await fetch(url, { body: JSON.stringify(data), method: "POST" });
 	const text = await resp.text();
-	if (resp.status != 200) return JSON.parse(text) as T;
+	if (resp.status == 200) return JSON.parse(text) as T;
 	throw text;
 }
 

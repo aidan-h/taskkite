@@ -9,9 +9,9 @@ import { stringify } from "querystring";
 import { Project, UserDataContext } from "../_lib/useUserData";
 
 function ProjectItem({ project }: { project: Project }) {
+	const router = useRouter()
 	return <div>
-		<h2>{project.name}</h2>
-		{project.id}
+		<button onClick={() => router.push("/app/project/" + project.id)}>{project.name}</button>
 	</div>
 }
 
