@@ -15,7 +15,7 @@ export default function Page() {
 			<Title>{project.name}</Title>
 			<ActiveTaskList project={project} />
 			<TaskCreation />
-			<button className="block mx-auto shadow rounded bg-slate-200 mb-4 px-4"
+			<button className="block mx-auto underline underline-offset-4 hover:text-indigo-500 mb-4 px-4"
 				onClick={() => setShowCompleted(!showCompleted)}>{showCompleted ? "Hide completed tasks" : "Show completed tasks"}</button>
 			{showCompleted ? <TaskList tasks={project.tasks.filter((task) => !task.archived && task.completed)} /> : undefined}
 			<ProjectSettingsButton id={project.id} />

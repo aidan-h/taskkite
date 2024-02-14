@@ -15,6 +15,7 @@ import SubmitCancel from "../_components/SubmitCancel";
 import { ProjectSync } from "../_lib/projectSync";
 import { ActiveTaskList } from "../_components/TaskList";
 import { ProjectContext, createProjectInterface } from "../_lib/ProjectContext";
+import Title from "../_components/Title";
 
 interface FormProps {
 	name: string;
@@ -100,7 +101,7 @@ function ProjectDueToday({ project }: { project: ProjectSync }) {
 	if (!pInterface)
 		return <div>Loading</div>
 	return <ProjectContext.Provider value={pInterface}>
-		<button className="block mb-4 text-lg" onClick={() => router.push("/app/project/" + project.id)}>{project.data.name}</button>
+		<button className="block mb-4 text-xl font-bold underline-offset-8 decoration-indigo-400 decoration-4 underline" onClick={() => router.push("/app/project/" + project.id)}>{project.data.name}</button>
 		<ActiveTaskList project={project.data} />
 	</ProjectContext.Provider>
 }
@@ -113,6 +114,7 @@ function DueToday() {
 export default function Home() {
 	return (
 		<CenterContainer>
+			<Title>Projects</Title>
 			<DueToday />
 			<CreateProjectButton />
 		</CenterContainer>
