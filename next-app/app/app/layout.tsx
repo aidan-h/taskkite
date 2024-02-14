@@ -1,6 +1,6 @@
 "use client";
 import { useSession } from "next-auth/react";
-import { AppDataContext, ProjectSync, createProjectSync } from "../_lib/useUserData";
+import { AppDataContext } from "../_lib/useUserData";
 import { useRouter } from "next/navigation";
 import { ReactNode, useEffect, useState } from "react";
 import Descriptor from "../_components/Descriptor";
@@ -9,6 +9,7 @@ import NavigationPanel from "../_components/NavigationPanel";
 import { Shadow, SyncState, SyncStatus, createSyncFetch, useSyncClient } from "../_lib/sync";
 import { getAppData, getProject } from "../_lib/api";
 import { AppData, ClientEvent, Project } from "../_lib/data";
+import { ProjectSync, createProjectSync } from "../_lib/projectSync";
 
 function Message({ children }: { children: ReactNode }) {
 	return (
