@@ -1,7 +1,7 @@
 import { ReactNode, useState } from "react";
 import SubmitCancel from "./SubmitCancel";
 
-export function ListItem({ onClick, children }: { onClick: () => void, children: ReactNode }) {
+export function ListItem({ onClick, children }: { onClick?: () => void, children: ReactNode }) {
 	return (
 		<div onClick={onClick} className="cursor-pointer text-wrap text-center relative text-md p-4 rounded shadow visible bg-slate-100 w-full block mb-4">
 			{children}
