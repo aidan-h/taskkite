@@ -1,23 +1,22 @@
 "use client";
-import { SyncStatus as Status, syncStatusText } from "../_lib/sync";
+import { SyncState } from "../_lib/sync";
+import { syncStateText } from "../_lib/syncSlice";
 import SecondaryButton from "./SecondaryButton";
 
 export default function SyncStatus({
-  sync,
-  status,
+	status,
 }: {
-  sync: () => void;
-  status: Status;
+	status: SyncState;
 }) {
-  if (status == Status.PENDING)
-    return (
-      <div className="absolute left-0 bottom-0 m-4">
-        <div>Syncing</div>
-      </div>
-    );
-  return (
-    <div className="absolute left-0 bottom-0 m-4">
-      <SecondaryButton onClick={sync}>{syncStatusText(status)}</SecondaryButton>
-    </div>
-  );
+	if (status == SyncState.SYNCING)
+		return (
+			<div className="absolute left-0 bottom-0 m-4">
+				<div>Syncing</div>
+			</div>
+		);
+	return (
+		<div className="absolute left-0 bottom-0 m-4">
+			<SecondaryButton onClick={() => console.log("sync")}>{syncStateText(status)}</SecondaryButton>
+		</div>
+	);
 }

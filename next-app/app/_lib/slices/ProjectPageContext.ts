@@ -1,10 +1,9 @@
 import { createContext } from "react";
-import { ProjectData } from "../data";
-import { Project } from "./projectsSlice";
+import { ProjectData } from "../schemas";
 
 const ProjectPageContext = createContext({
-  data: {} as ProjectData,
-  project: {} as Project,
+	data: {} as ProjectData,
+	project: {} as Project,
 });
 
 export default ProjectPageContext;

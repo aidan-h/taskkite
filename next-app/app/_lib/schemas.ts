@@ -1,8 +1,6 @@
 import { ZodSchema, z } from "zod";
+import { Event } from "./sync";
 
-function createEventSchema<T>(name: string, schema: ZodSchema<T>) {
-	return z.tuple([z.literal(name), schema]);
-}
 export const nameSchema = z
 	.string()
 	.min(1, { message: "name can't be empty" })
@@ -84,22 +82,43 @@ export type AddLabelEvent = DeleteLabelEvent;
 export type DeleteTaskEvent = z.infer<typeof affectTaskSchema>;
 export type CreateProjectEvent = z.infer<typeof nameSchema>
 
-export const userEventSchema = z.union([
-	createEventSchema<CreateTaskEvent>("createTask", createTaskSchema),
-	createEventSchema<EditTaskEvent>("editTask", editTaskSchema),
-	createEventSchema<DeleteTaskEvent>("deleteTask", affectTaskSchema),
-	createEventSchema<DeleteLabelEvent>("deleteLabel", affectLabelSchema),
-	createEventSchema<AddLabelEvent>("addLabel", affectLabelSchema),
-	createEventSchema<CreateProjectEvent>("createProject", nameSchema),
-]);
+export interface ProjectEvents {
+	createTask: CreateTaskEvent,
+	editTask: EditTaskEvent,
+	deleteTask: DeleteTaskEvent,
+	addLabel: AddLabelEvent,
+	deleteLabel: DeleteLabelEvent
+}
 
-export type ClientEvent = z.infer<typeof userEventSchema>;
+export type ProjectEvent = Event<ProjectEvents>
+
+export type ProjectEventSchemas = {
+	[Key in keyof ProjectEvents]: ZodSchema<ProjectEvents[Key]>
+}
+
+export const projectEventSchemas: ProjectEventSchemas = {
+	createTask: createTaskSchema,
+	editTask: editTaskSchema,
+	deleteTask: affectTaskSchema,
+	deleteLabel: affectLabelSchema,
+	addLabel: affectLabelSchema,
+}
+
+export const projectEventSchema = z.union([
+	z.tuple([z.literal("createTask"), createTaskSchema]),
+	z.tuple([z.literal("editTask"), editTaskSchema]),
+	z.tuple([z.literal("deleteTask"), affectTaskSchema]),
+	z.tuple([z.literal("deleteLabel"), affectLabelSchema]),
+	z.tuple([z.literal("addLabel"), affectLabelSchema]),
+	z.tuple([z.literal("createProject"), nameSchema]),
+]);
 
 export const syncRequestSchema = z.object({
 	projectId: idSchema,
 	index: idSchema,
-	changes: z.array(userEventSchema).optional(),
+	changes: z.array(projectEventSchema).optional(),
 });
+
 export type SyncRequest = z.infer<typeof syncRequestSchema>;
 export const editUserSchema = z.object({ name: nameSchema });
 export type EditUserRequest = z.infer<typeof editUserSchema>;
@@ -132,6 +151,7 @@ export type AccountSettings = {
 	email: string;
 	name: string;
 };
+
 export interface CreateProjectResponse {
 	id: number;
 }

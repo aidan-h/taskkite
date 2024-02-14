@@ -1,44 +1,12 @@
-import { Draft } from "@reduxjs/toolkit";
-import { syncProject } from "./api";
 import {
-	AddLabelEvent,
-	ClientEvent,
-	CreateTaskEvent,
-	DeleteLabelEvent,
-	DeleteTaskEvent,
 	EditTaskEvent,
 	ProjectData,
+	ProjectEvents,
 	Task,
-} from "./data";
+} from "./schemas";
+import { EventHandlers } from "./sync";
 
-function editTasks(
-	project: ProjectData,
-	id: number,
-	action: (task: Task) => Task,
-): Task[] {
-	const index = project.tasks.findIndex((task) => task.id == id);
-	if (index == -1) {
-		console.error("couldn't apply event to unfound task", project);
-		return project.tasks;
-	}
-	let tasks = project.tasks.slice();
-	tasks[index] = action(tasks[index]);
-	return tasks;
-}
-
-interface EV {
-	createTask: CreateTaskEvent,
-	editTask: EditTaskEvent,
-	deleteTask: DeleteTaskEvent,
-	addLabel: AddLabelEvent,
-	deleteLabel: DeleteLabelEvent
-}
-
-type N = {
-	[Key in keyof EV]: (project: Draft<ProjectData>, event: EV[Key]) => void;
-}
-
-const n: N = {
+export const clientProjectEventHandlers: EventHandlers<ProjectEvents, ProjectData> = {
 	createTask: (project, event) => {
 		project.tasks.push(
 			{

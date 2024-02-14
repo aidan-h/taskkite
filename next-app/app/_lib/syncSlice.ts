@@ -1,12 +1,6 @@
 import { Draft } from "@reduxjs/toolkit";
 import createAppSlice from "./createAppSlice";
-
-type Event<E, N extends keyof E = any> = [N, E[N]]
-export enum SyncState {
-	SYNCING,
-	SYNCED,
-	FAILED,
-}
+import { EventHandlers, InitialState, SyncData, Event, Syncer, pushEvent, fromInitialState, pushAndMoveQueuedEvents, updateClient, handleRejection, SyncState, moveQueuedEvents } from "./sync";
 
 export function syncStateText(status: SyncState): string {
 	if (status == SyncState.SYNCING) return "Pending";
@@ -14,72 +8,12 @@ export function syncStateText(status: SyncState): string {
 	return "Failed";
 }
 
-export interface SyncData<T, E> {
-	data: T,
-	shadow: T,
-	queuedEvents: Event<E>[],
-	proccessingEvents: Event<E>[],
-	state: SyncState,
-	historyCount: number
-}
-
-export type Syncer<E> = (historyCount: number, events: Event<E>[]) => Promise<Event<E>[]>;
-
-export type ApplyEvent<T, E> = (data: Draft<T>, event: Draft<E>) => void;
-
-export interface InitialState<T> {
-	data: T,
-	historyCount: number,
-}
-
-function fromInitialState<T, E>(initialState: InitialState<T>): SyncData<T, E> {
-	return {
-		data: initialState.data,
-		shadow: initialState.data,
-		state: SyncState.SYNCED,
-		historyCount: initialState.historyCount,
-		queuedEvents: [],
-		proccessingEvents: []
-	};
-}
-
-function handleRejection<T, E>(syncData: Draft<SyncData<T, E>>) {
-	syncData.state = SyncState.FAILED
-	syncData.queuedEvents = syncData.proccessingEvents.concat(syncData.queuedEvents)
-	syncData.proccessingEvents = []
-}
-
-
-function applyEvent<T, E>(data: Draft<T>, eventHandlers: EventHandlers<E, T>, event: Draft<Event<E>>) {
-	//@ts-ignore
-	const handler = eventHandlers[event[0]];
-	handler(data, event[1])
-}
-
-function updateClient<T, E>(eventHandlers: EventHandlers<E, T>, syncData: Draft<SyncData<T, E>>, events: Event<E>[]) {
-	syncData.state = SyncState.SYNCED;
-	events.forEach((e) => applyEvent(syncData.shadow, eventHandlers, e as Draft<Event<E>>));
-	syncData.data = { ...syncData.shadow };
-	syncData.queuedEvents.forEach((e) => applyEvent(syncData.data, eventHandlers, e));
-	syncData.proccessingEvents = [];
-}
-
-function moveQueuedEvents<T, E>(syncData: Draft<SyncData<T, E>>) {
-	syncData.proccessingEvents = syncData.queuedEvents;
-	syncData.queuedEvents = [];
-	syncData.state = SyncState.SYNCING
-}
-
-export type EventHandlers<E, T> = {
-	[Key in keyof E]: (data: Draft<T>, event: E[Key]) => void;
-}
-
-export function syncArraySlice<T, E, S>(
+export function syncArraySlice<T, E>(
 	name: string,
 	initialStates: InitialState<T>[],
-	syncer: Syncer<E>,
+	syncer: Syncer<T, E>,
 	eventHandlers: EventHandlers<E, T>,
-	selector: (rootState: S) => SyncData<T, E>[],
+	selector: (rootState: unknown) => SyncData<T, E>[],
 ) {
 	return createAppSlice({
 		name,
@@ -87,32 +21,25 @@ export function syncArraySlice<T, E, S>(
 		reducers: (create) => {
 			return {
 				pushEvent: create.asyncThunk(
-					async ({ event, index }: { event: Event<E>, index: number }, thunkApi) => {
-						const syncData = selector(thunkApi.getState() as S)[index]
-						if (syncData.state == SyncState.SYNCING)
-							return undefined
-						return await syncer(syncData.historyCount, [...syncData.queuedEvents, event])
-					}, {
-					pending: (syncs, action) => {
-						const syncData = syncs[action.meta.arg.index];
-						syncData.queuedEvents.push(action.meta.arg.event as Draft<Event<E>>);
-						moveQueuedEvents(syncData);
+					async ({ event, index }: { event: Event<E>, index: number }, thunkApi) =>
+						await pushEvent(event, selector(thunkApi.getState())[index], syncer)
+					, {
+						pending: (syncs, action) =>
+							pushAndMoveQueuedEvents(syncs[action.meta.arg.index], action.meta.arg.event as Draft<Event<E>>),
+						fulfilled: (syncs, action) => {
+							if (action.payload == undefined) return
+							updateClient(eventHandlers, syncs[action.meta.arg.index], action.payload);
+						},
+						rejected: (syncs, action) =>
+							handleRejection(syncs[action.meta.arg.index]),
 					},
-					fulfilled: (syncs, action) => {
-						const syncData = syncs[action.meta.arg.index];
-						if (action.payload == undefined) return
-						updateClient(eventHandlers, syncData, action.payload);
-					},
-					rejected: (syncs, action) =>
-						handleRejection(syncs[action.meta.arg.index]),
-				},
 				),
 				sync: create.asyncThunk(
 					async (index: number, thunkApi) => {
-						const syncData = selector(thunkApi.getState() as S)[index]
+						const syncData = selector(thunkApi.getState())[index]
 						if (syncData.state == SyncState.SYNCING)
 							throw "already syncing for " + name + " slice"
-						return await syncer(syncData.historyCount, syncData.queuedEvents)
+						return await syncer(syncData, syncData.queuedEvents)
 					},
 					{
 						pending: (syncs, action) => moveQueuedEvents(syncs[action.meta.arg]),
@@ -126,12 +53,12 @@ export function syncArraySlice<T, E, S>(
 	});
 }
 
-export function syncSlice<T, E, S>(
+export function syncSlice<T, E>(
 	name: string,
 	initialState: InitialState<T>,
-	syncer: Syncer<E>,
+	syncer: Syncer<T, E>,
 	eventHandlers: EventHandlers<E, T>,
-	selector: (rootState: S) => SyncData<T, E>,
+	selector: (rootState: unknown) => SyncData<T, E>,
 ) {
 	return createAppSlice({
 		name,
@@ -147,10 +74,10 @@ export function syncSlice<T, E, S>(
 			return {
 				pushEvent: create.asyncThunk(
 					async (event: Event<E>, thunkApi) => {
-						const syncData = selector(thunkApi.getState() as S)
+						const syncData = selector(thunkApi.getState())
 						if (syncData.state == SyncState.SYNCING)
 							return undefined
-						return await syncer(syncData.historyCount, [...syncData.queuedEvents, event])
+						return await syncer(syncData, [...syncData.queuedEvents, event])
 					}, {
 					pending: (syncData, action) => {
 						syncData.queuedEvents.push(action.meta.arg as Draft<Event<E>>);
@@ -165,10 +92,10 @@ export function syncSlice<T, E, S>(
 				),
 				sync: create.asyncThunk(
 					async (_, thunkApi) => {
-						const syncData = selector(thunkApi.getState() as S)
+						const syncData = selector(thunkApi.getState())
 						if (syncData.state == SyncState.SYNCING)
 							throw "already syncing for " + name + " slice"
-						return await syncer(syncData.historyCount, syncData.queuedEvents)
+						return await syncer(syncData, syncData.queuedEvents)
 					},
 					{
 						pending: moveQueuedEvents,

@@ -1,13 +1,13 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { AppData } from "./data";
-import { ClientProject, SyncState, newProjectsSlice } from "./slices/projectsSlice";
+import { AppData } from "./schemas";
+import { ClientProject, SyncState, projectsSlice } from "./slices/projectsSlice";
 import { accountSettingsSlice } from "./slices/accountSettingsSlice";
 
 export function createStore(appData: AppData) {
 	return configureStore({
 		reducer: {
 			accountSettings: accountSettingsSlice.reducer,
-			projects: newProjectsSlice.reducer,
+			projects: projectsSlice.reducer,
 		},
 		preloadedState: {
 			accountSettings: {
