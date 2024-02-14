@@ -11,7 +11,8 @@ import {
 	DeleteTaskEvent,
 	EditTaskEvent,
 } from "@/app/_lib/data";
-import { useProjectSync } from "@/app/_lib/useUserData";
+import { AppDataContext } from "@/app/_lib/useUserData";
+import { useContext } from "react";
 export default function ProjectLayout({
 	params,
 	children,
@@ -20,7 +21,11 @@ export default function ProjectLayout({
 	children: React.ReactNode;
 }) {
 	const projectId = parseInt(params.id);
-	const projectData = useProjectSync(projectId);
+	const appData = useContext(AppDataContext)
+	const projectData = appData.projects.find((p) => p.id == projectId)
+
+	if (!projectData)
+		return <div>Project not found</div>
 
 	if (projectData.data) {
 		return (

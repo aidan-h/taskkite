@@ -18,6 +18,7 @@ import {
 	PushEvent,
 	Shadow,
 	useSyncClient,
+	SyncState,
 } from "./sync";
 
 export const SyncStateContext = createContext<SyncStatus>(SyncStatus.PENDING);
@@ -30,12 +31,14 @@ export type AppSync = SyncClient<AppData>;
 export const AppDataContext = createContext<{
 	data: AppData;
 	update: () => void;
+	projects: ProjectSync[],
 }>({
 	data: {
 		email: "test@test.com",
 		name: "name",
 		projects: [],
 	},
+	projects: [],
 	update: () => { },
 });
 
@@ -145,19 +148,28 @@ function applyEvent(project: Project, [name, data]: ClientEvent): Project {
 }
 
 export type ProjectSync = {
+	id: number;
 	emit: PushEvent<ClientEvent>;
 	data: Project | undefined;
 	status: SyncStatus;
 	fetch: () => void;
 }
 
-export function useProjectSync(id: number): ProjectSync {
-	const [shadow, setShadow] = useState(undefined as Shadow<Project, ClientEvent> | undefined)
-	const client = useSyncClient(() => getProject({ projectId: id }));
+export interface ProjectSyncParameters {
+	shadow: Shadow<Project, ClientEvent> | undefined;
+	setShadow: (shadow: Shadow<Project, ClientEvent> | undefined) => void;
+	id: number;
+	state: SyncState<Project>;
+	setState: (state: SyncState<Project>) => void;
+	fetch: () => void;
+}
+
+export function createProjectSync(p: ProjectSyncParameters): ProjectSync {
 	return {
-		fetch: client.fetch,
-		data: client.state.data,
-		status: client.state.status,
+		id: p.id,
+		fetch: p.fetch,
+		data: p.state.data,
+		status: p.state.status,
 		emit: getPushEvent(
 			(events, data) =>
 				syncProject({
@@ -165,11 +177,16 @@ export function useProjectSync(id: number): ProjectSync {
 					changes: events,
 					index: data.historyCount,
 				}),
-			client.state,
-			client.setState,
+			p.state,
+			p.setState,
 			applyEvent,
-			shadow,
-			setShadow
+			p.shadow,
+			p.setShadow
 		)
 	};
+}
+export function useProjectSync(id: number): ProjectSync {
+	const [shadow, setShadow] = useState(undefined as Shadow<Project, ClientEvent> | undefined)
+	const client = useSyncClient(() => getProject({ projectId: id }));
+	return createProjectSync({ client: client, shadow: shadow, setShadow: setShadow });
 }
