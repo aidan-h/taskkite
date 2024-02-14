@@ -23,14 +23,19 @@ export type DeleteTask = (e: DeleteTaskEvent) => void;
 export type EditTask = (e: EditTaskEvent) => void;
 
 function TaskWidget({ task, openTask }: { task: Task; openTask: () => void }) {
+	const b = <>
+		<h2 className="text-md text-left">{task.name}</h2>
+		<Labels labels={task.labels} onClick={() => { }} />
+		<p className="text-left">{task.dueDate ? <div>{task.dueDate.toString() + " " + task.dueTime?.toString()}</div> : undefined}</p>
+		<p className="text-slate-500 text-sm text-left mb-2">
+			{task.description}
+		</p>
+	</>
+
 	if (task.completed)
 		return (
 			<SecondaryListItem>
-				<h2 className="text-md text-left">{task.name}</h2>
-				<Labels labels={task.labels} onClick={() => { }} />
-				<p className="text-slate-500 text-sm text-left mb-2">
-					{task.description}
-				</p>
+				{b}
 				<BottomRightContainer>
 					<ProjectContext.Consumer>
 						{({ editTask }) => (
@@ -48,11 +53,7 @@ function TaskWidget({ task, openTask }: { task: Task; openTask: () => void }) {
 
 	return (
 		<ListItem>
-			<h2 className="text-md text-left">{task.name}</h2>
-			<Labels labels={task.labels} onClick={() => { }} />
-			<p className="text-slate-500 text-sm text-left mb-2">
-				{task.description}
-			</p>
+			{b}
 			<BottomRightContainer>
 				<button
 					className="text-center rounded text-sm shadow bg-slate-50 py-1 px-2"

@@ -84,6 +84,8 @@ function applyEvent(project: Project, [name, data]: ClientEvent): Project {
 					"description",
 					"archived",
 					"completed",
+					"dueDate",
+					"dueTime",
 				];
 				for (const field of fields) {
 					if (event[field] != undefined) {

@@ -14,7 +14,7 @@ import { UserSession } from "@/app/_lib/session";
 import { Connection, RowDataPacket } from "mysql2/promise";
 
 const CREATE_TASK_STATEMENT =
-	"INSERT INTO task (project_id, id, name, description, archived, completed) VALUES (?, ?, ?, ?, false, false)";
+	"INSERT INTO task (project_id, id, name, description, archived, completed, due_date, due_time) VALUES (?, ?, ?, ?, false, false, ?, ?)";
 
 async function getCount(
 	db: Connection,
@@ -64,7 +64,7 @@ async function getProjectHistoryCount(
 	return await getCount(db, "project", "history_count", "id", projectId);
 }
 
-const ADD_LABEL_STATEMENT = `INSERT INTO label (project_id, task_id, name) VALUES (?, ?, ?)`;
+const ADD_LABEL_STATEMENT = `INSERT INTO label (project_id, task_id, name, due_date, due_time) VALUES (?, ?, ?, ?, ?)`;
 async function createTask(
 	db: Connection,
 	data: CreateTaskEvent,
@@ -79,7 +79,7 @@ async function createTask(
 	]);
 	if (data.labels)
 		for (const label of data.labels)
-			await db.execute(ADD_LABEL_STATEMENT, [projectId, count, label]);
+			await db.execute(ADD_LABEL_STATEMENT, [projectId, count, label, data.dueDate, data.dueTime]);
 }
 
 const DELETE_LABEL_STATEMENT = `DELETE FROM label WHERE project_id = ? AND task_id = ? AND name = ?`;
@@ -100,27 +100,29 @@ async function addLabel(
 	await db.execute(ADD_LABEL_STATEMENT, [projectId, data.id, data.name]);
 }
 
+const TASK_FIELDS: [keyof EditTaskEvent, string][] = [
+	["name", "name"],
+	["completed", "completed"],
+	["description", "description"],
+	["archived", "archived"],
+	["dueDate", "due_date"],
+	["dueTime", "due_time"]
+];
 async function editTask(
 	db: Connection,
 	data: EditTaskEvent,
 	projectId: number,
 ) {
 	let statement = "UPDATE task SET ";
-	const fields: (keyof EditTaskEvent)[] = [
-		"name",
-		"completed",
-		"description",
-		"archived",
-	];
-	let expressions = fields.filter((field) => data[field] != undefined);
-	let values = expressions.map((field) => data[field]);
-	if (fields.length == 0) return;
-	for (let i = 0; i < expressions.length - 1; i++) {
-		const field = fields[i];
-		statement += field + " = ?, ";
+	const fields = TASK_FIELDS.filter(([field,]) => data[field] != undefined);
+	let values = fields.map(([field,]) => data[field]);
+
+	for (let i = 0; i < values.length - 1; i++) {
+		const [, dbField] = fields[i];
+		statement += dbField + " = ?, ";
 	}
-	const field = fields[fields.length - 1];
-	statement += field + " = ? WHERE project_id = ? AND id = ?";
+	const [, dbField] = fields[fields.length - 1];
+	statement += dbField + " = ? WHERE project_id = ? AND id = ?";
 	values.push(projectId);
 	values.push(data.id);
 

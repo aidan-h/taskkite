@@ -43,16 +43,18 @@ function Form({
 			onSubmit={(values, { setSubmitting }) => {
 				onSubmit({
 					id: task.id,
+					dueDate: values.dueDate,
 					archived: task.archived,
 					completed: task.completed,
 					labels: task.labels,
 					name: values.name,
+					dueTime: values.dueTime,
 					description: values.description,
 				});
 				close();
 				setSubmitting(false);
 			}}
-			initialValues={{ name: task.name, description: task.description }}
+			initialValues={{ name: task.name, dueDate: task.dueDate, dueTime: task.dueTime, description: task.description }}
 		>
 			{({ handleSubmit, submitForm, handleChange, values, errors }) => (
 				<div
@@ -62,6 +64,8 @@ function Form({
 					<form
 						onSubmit={handleSubmit}
 					>
+						<input type="date" value={values.dueDate} onChange={handleChange} name="dueDate" className="mr-2" />
+						<input type="time" step={2} value={values.dueTime} onChange={handleChange} name="dueTime" className="mb-4" />
 						<input
 							type="text"
 							className="mb-4 py-1 pl-2 w-full bg-slate-50 rounded shadow"
