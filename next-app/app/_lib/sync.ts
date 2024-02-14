@@ -20,7 +20,7 @@ export interface SyncState<T> {
 	data: T | undefined;
 }
 
-export class SyncClient<T> {
+export interface SyncClient<T> {
 	fetch: () => void;
 	setState: (state: SyncState<T>) => void;
 	state: SyncState<T>;

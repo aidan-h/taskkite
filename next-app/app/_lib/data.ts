@@ -1,5 +1,8 @@
 import { ZodSchema, z } from "zod";
 
+function createEventSchema<T>(name: string, schema: ZodSchema<T>) {
+	return z.tuple([z.literal(name), schema]);
+}
 export const nameSchema = z
 	.string()
 	.min(1, { message: "name can't be empty" })
@@ -7,41 +10,6 @@ export const nameSchema = z
 	.trim();
 
 export const descriptionSchema = z.string().max(200).trim().optional();
-export type Description = z.infer<typeof descriptionSchema>;
-export type Label = z.infer<typeof nameSchema>;
-
-const idSchema = z.number().nonnegative().int();
-const boolSchema = z.boolean();
-
-const labelsSchema = z.array(nameSchema).optional();
-
-const taskIdSchema = z.object({
-	id: idSchema,
-});
-
-const affectLabelSchema = z
-	.object({
-		name: nameSchema,
-	})
-	.merge(taskIdSchema);
-
-export const affectProjectSchema = z.object({
-	projectId: idSchema,
-});
-
-export type AffectProject = z.infer<typeof affectProjectSchema>;
-
-export const affectMemberSchema = z
-	.object({
-		memberEmail: z.string(),
-	})
-	.merge(affectProjectSchema);
-
-export const editProjectSchema = z
-	.object({
-		name: nameSchema,
-	})
-	.merge(affectProjectSchema);
 
 /**
  * YYYY-MM-DD per MySQL spec
@@ -61,42 +29,57 @@ const taskBaseSchema = z.object({
 	dueTime: dueTimeSchema,
 	description: descriptionSchema,
 });
+const labelsSchema = z.array(nameSchema).optional();
 
 const taskAfterBaseSchema = z
 	.object({
-		archived: boolSchema,
-		completed: boolSchema,
+		archived: z.boolean(),
+		completed: z.boolean(),
 	})
 	.merge(taskBaseSchema);
 
-const createTaskSchema = z
+const idSchema = z.number().nonnegative().int();
+export const affectProjectSchema = z.object({
+	projectId: idSchema,
+});
+export type AffectProject = z.infer<typeof affectProjectSchema>
+
+const taskAndLabelsSchema = z
 	.object({
 		labels: labelsSchema,
 	})
 	.merge(taskBaseSchema);
 
-export const taskSchema = taskAfterBaseSchema
-	.merge(createTaskSchema)
-	.merge(taskIdSchema);
+const createTaskSchema = taskAndLabelsSchema.merge(affectProjectSchema);
 
-const editTaskSchema = taskIdSchema.merge(taskAfterBaseSchema.partial());
+const taskIdSchema = z.object({
+	id: idSchema,
+});
+
+export type Label = z.infer<typeof nameSchema>;
+const affectTaskSchema = taskIdSchema.merge(affectProjectSchema);
+const affectLabelSchema = z
+	.object({
+		name: nameSchema,
+	})
+	.merge(affectTaskSchema);
+
+export const taskSchema = taskAfterBaseSchema
+	.merge(taskAndLabelsSchema)
+	.merge(taskIdSchema);
+export type Task = z.infer<typeof taskSchema>;
+const editTaskSchema = taskIdSchema.merge(taskAfterBaseSchema).merge(affectProjectSchema);
 export type CreateTaskEvent = z.infer<typeof createTaskSchema>;
 export type EditTaskEvent = z.infer<typeof editTaskSchema>;
 export type DeleteLabelEvent = z.infer<typeof affectLabelSchema>;
 export type AddLabelEvent = DeleteLabelEvent;
-export type DeleteTaskEvent = z.infer<typeof taskIdSchema>;
-export const editUserSchema = z.object({ name: nameSchema })
+export type DeleteTaskEvent = z.infer<typeof affectTaskSchema>;
 
-export type Task = z.infer<typeof taskSchema>;
-
-function createEventSchema<T>(name: string, schema: ZodSchema<T>) {
-	return z.tuple([z.literal(name), schema]);
-}
 
 export const userEventSchema = z.union([
 	createEventSchema<CreateTaskEvent>("createTask", createTaskSchema),
 	createEventSchema<EditTaskEvent>("editTask", editTaskSchema),
-	createEventSchema<DeleteTaskEvent>("deleteTask", taskIdSchema),
+	createEventSchema<DeleteTaskEvent>("deleteTask", affectTaskSchema),
 	createEventSchema<DeleteLabelEvent>("deleteLabel", affectLabelSchema),
 	createEventSchema<AddLabelEvent>("addLabel", affectLabelSchema),
 ]);
@@ -109,7 +92,20 @@ export const syncRequestSchema = z.object({
 	changes: z.array(userEventSchema).optional(),
 });
 export type SyncRequest = z.infer<typeof syncRequestSchema>;
+export const editUserSchema = z.object({ name: nameSchema })
 export type EditUserRequest = z.infer<typeof editUserSchema>
+
+export const affectMemberSchema = z
+	.object({
+		memberEmail: z.string(),
+	})
+	.merge(affectProjectSchema);
+
+export const editProjectSchema = z
+	.object({
+		name: nameSchema,
+	})
+	.merge(affectProjectSchema);
 
 export interface ProjectIdentifier {
 	id: number;
@@ -117,14 +113,20 @@ export interface ProjectIdentifier {
 	name: string;
 }
 
-export interface Project extends ProjectIdentifier {
+export interface ProjectData {
 	tasks: Task[];
 	historyCount: number;
 	taskCount: number;
 }
 
-export interface AppData {
+export type AccountSettings = {
 	email: string;
 	name: string;
+}
+export interface CreateProjectResponse {
+	id: number;
+}
+
+export type AppData = AccountSettings & {
 	projects: ProjectIdentifier[];
 }

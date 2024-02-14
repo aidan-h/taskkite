@@ -5,13 +5,14 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-		"type-check": "tsc",
+    "type-check": "tsc",
     "docker": "docker build -t taskkite .",
     "start": "next start",
     "lint": "eslint app",
     "format": "npx prettier ./app --write"
   },
   "dependencies": {
+    "@reduxjs/toolkit": "^2.1.0",
     "@types/luxon": "^3.4.2",
     "formik": "^2.4.5",
     "luxon": "^3.4.4",
@@ -20,6 +21,7 @@
     "next-auth": "^4.24.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-redux": "^9.1.0",
     "zod": "^3.22.4",
     "zod-validation-error": "^3.0.0"
   },

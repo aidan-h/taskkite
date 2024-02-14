@@ -1,7 +1,7 @@
 import {
 	AffectProject,
 	Label,
-	Project,
+	ProjectData,
 	Task,
 	affectProjectSchema,
 } from "@/app/_lib/data";
@@ -28,7 +28,7 @@ async function getLabels(
 	return r.map((row) => row.name);
 }
 
-async function getProject(db: Connection, projectId: number): Promise<Project> {
+async function getProject(db: Connection, projectId: number): Promise<ProjectData> {
 	await db.query(LOCK_STATEMENT);
 	const [projectRows] = await db.execute<RowDataPacket[]>(
 		GET_PROJECT_STATEMENT,
@@ -76,11 +76,8 @@ async function getProject(db: Connection, projectId: number): Promise<Project> {
 	}
 
 	return {
-		id: projectId,
-		name: projectRow.name,
 		historyCount: projectRow.history_count,
 		taskCount: projectRow.task_count,
-		owner: projectRow.owner,
 		tasks: tasks,
 	};
 }

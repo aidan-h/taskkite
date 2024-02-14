@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Project, Task } from "../_lib/data";
+import { ProjectData, Task } from "../_lib/data";
 import { TaskEditing } from "./TaskCreation";
 import TaskComponent, { getTaskDateTime } from "./TaskComponent";
 
@@ -23,7 +23,7 @@ function sortTasks(a: Task, b: Task): number {
 
 }
 
-export function TaskList({ tasks }: { tasks: Task[] }) {
+export function TaskList({ tasks, projectId }: { projectId: number, tasks: Task[] }) {
 	const [taskEditing, setTaskEditing] = useState(
 		undefined as undefined | number,
 	);
@@ -32,6 +32,7 @@ export function TaskList({ tasks }: { tasks: Task[] }) {
 			if (task.id == taskEditing)
 				return (
 					<TaskEditing
+						projectId={projectId}
 						close={() => setTaskEditing(undefined)}
 						key={task.id}
 						task={task}
@@ -39,6 +40,7 @@ export function TaskList({ tasks }: { tasks: Task[] }) {
 				);
 			return (
 				<TaskComponent
+					projectId={projectId}
 					openTask={() => setTaskEditing(task.id)}
 					key={task.id}
 					task={task}
@@ -47,8 +49,8 @@ export function TaskList({ tasks }: { tasks: Task[] }) {
 		})
 }
 
-export function ActiveTaskList({ project }: { project: Project }) {
+export function ActiveTaskList({ project, projectId }: { projectId: number, project: ProjectData }) {
 	return (
-		<TaskList tasks={project.tasks.filter((task) => !task.archived && !task.completed)} />
+		<TaskList projectId={projectId} tasks={project.tasks.filter((task) => !task.archived && !task.completed)} />
 	);
 }

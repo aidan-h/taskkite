@@ -3,18 +3,8 @@
 import Descriptor from "@/app/_components/Descriptor";
 import Hero from "@/app/_components/Hero";
 import SyncStatus from "@/app/_components/SyncStatus";
-import { ProjectContext, ProjectInterface, createProjectInterface } from "@/app/_lib/ProjectContext";
-import {
-	AddLabelEvent,
-	CreateTaskEvent,
-	DeleteLabelEvent,
-	DeleteTaskEvent,
-	EditTaskEvent,
-} from "@/app/_lib/data";
-import { ProjectSync } from "@/app/_lib/projectSync";
-import { AppDataContext } from "@/app/_lib/useUserData";
-import { useContext } from "react";
-
+import { useAppSelector } from "@/app/_lib/hooks";
+import ProjectPageContext from "@/app/_lib/slices/ProjectPageContext";
 
 export default function ProjectLayout({
 	params,
@@ -24,20 +14,19 @@ export default function ProjectLayout({
 	children: React.ReactNode;
 }) {
 	const projectId = parseInt(params.id);
-	const appData = useContext(AppDataContext)
-	const projectData = appData.projects.find((p) => p.id == projectId)
+	const projects = useAppSelector((app) => app.projects);
+	const project = projects.find((p) => p.id == projectId)
 
-	if (!projectData)
+	if (!project)
 		return <div>Project not found</div>
 
-	if (projectData.data) {
+	if (project.data) {
 		return (
-			<ProjectContext.Provider
-				value={createProjectInterface(projectData)!}
+			<ProjectPageContext.Provider
+				value={{ data: project.data, project: project }}
 			>
-				<SyncStatus />
 				{children}
-			</ProjectContext.Provider>
+			</ProjectPageContext.Provider>
 		);
 	}
 

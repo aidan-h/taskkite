@@ -1,10 +1,12 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { AppData } from "../_lib/data";
 import AccountButton from "./AccountButton";
+import { useAppSelector } from "../_lib/hooks";
 
-export default function NavigationPanel({ appData }: { appData: AppData }) {
+export default function NavigationPanel() {
 	const router = useRouter();
+	const projects = useAppSelector((state) => state.projects)
+
 	return (
 		<div className="fixed border-b-8 sm:border-b-0 sm:border-r-8 border-indigo-400 bg-zinc-100 text-zinc-900 dark:bg-zinc-700 dark:text-zinc-50 top-0 w-screen sm:h-screen flex sm:block sm:w-40">
 			<AccountButton />
@@ -14,7 +16,7 @@ export default function NavigationPanel({ appData }: { appData: AppData }) {
 			>
 				Projects
 			</button>
-			{appData.projects.map((project) => (
+			{projects.map((project) => (
 				<button
 					className="sm:mx-4 font-medium invisible sm:visible"
 					key={project.id}

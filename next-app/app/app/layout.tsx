@@ -1,15 +1,14 @@
 "use client";
 import { useSession } from "next-auth/react";
-import { AppDataContext } from "../_lib/useUserData";
 import { useRouter } from "next/navigation";
 import { ReactNode, useEffect, useState } from "react";
 import Descriptor from "../_components/Descriptor";
 import Hero from "../_components/Hero";
 import NavigationPanel from "../_components/NavigationPanel";
-import { Shadow, SyncState, SyncStatus, createSyncFetch, useSyncClient } from "../_lib/sync";
-import { getAppData, getProject } from "../_lib/api";
-import { AppData, ClientEvent, Project } from "../_lib/data";
-import { ProjectSync, createProjectSync } from "../_lib/projectSync";
+import { Session } from "next-auth";
+import { AppStore, createStore } from "../_lib/store";
+import { Provider } from "react-redux";
+import { getAppData } from "../_lib/api";
 
 function Message({ children }: { children: ReactNode }) {
 	return (
@@ -19,81 +18,18 @@ function Message({ children }: { children: ReactNode }) {
 	);
 }
 
-function useProjectsData(appData: AppData | undefined): ProjectSync[] {
-	//TODO not sure if a 2-step useState is efficient here
-	const [projects, setProjects] = useState([] as {
-		id: number;
-		status: SyncStatus;
-		data: Project | undefined;
-		shadow: Shadow<Project, ClientEvent> | undefined;
-	}[]);
-	const [syncs, setSyncs] = useState([] as ProjectSync[])
-
-	useEffect(() => {
-		if (!appData) {
-			setProjects([])
-			return;
-		}
-		setProjects(appData.projects.map((projectIdentifier) => {
-			return {
-				id: projectIdentifier.id,
-				status: SyncStatus.WAITING,
-				data: undefined,
-				shadow: undefined,
-			}
-		}));
-	}, [appData])
-
-	useEffect(() =>
-		setSyncs(projects.map((p) => {
-			const setSyncState = (newState: SyncState<Project>) => setProjects(projects.map((project) => {
-				if (project.id != p.id)
-					return project
-				return {
-					...project,
-					status: newState.status,
-					data: newState.data,
-				}
-			}));
-			const syncState = {
-				status: p.status,
-				data: p.data,
-			};
-			const fetch = createSyncFetch(syncState, setSyncState, () => getProject({ projectId: p.id }));
-			if (p.status == SyncStatus.WAITING)
-				fetch()
-
-			return createProjectSync({
-				id: p.id,
-				setState: setSyncState,
-				state: syncState,
-				fetch: fetch,
-				shadow: p.shadow,
-				setShadow: (shadow) => setProjects(projects.map((project) => {
-					if (project.id != p.id)
-						return project
-					return {
-						...project,
-						shadow: shadow
-					}
-
-				}))
-
-			})
-		}))
-		, [projects]);
-
-	return syncs
-}
-
 export default function AppLayout({ children }: { children: React.ReactNode }) {
 	const d = useSession();
-	let data = null
+	const [store, setStore] = useState(undefined as AppStore | undefined);
+	let data: Session | null | undefined = null
 	if (d) data = d.data
-	const clientData = useSyncClient(getAppData);
 	const router = useRouter();
-	const appData = clientData.state.data;
-	const projectsData = useProjectsData(appData);
+
+	useEffect(() => {
+		if (data && !store) {
+			getAppData().then((appData) => setStore(createStore(appData))).catch(console.error);
+		}
+	}, [store, data]);
 
 	useEffect(() => {
 		if (data === null) {
@@ -105,20 +41,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
 	if (data === undefined) return <Message>Loading session</Message>;
 
-	if (appData) {
+	if (store) {
 		return (
-			<AppDataContext.Provider
-				value={{
-					projects: projectsData,
-					data: appData,
-					update: clientData.fetch,
-				}}
+			<Provider
+				store={store}
 			>
 				<div className="sm:ml-40">
 					{children}
 				</div>
-				<NavigationPanel appData={clientData.state.data} />
-			</AppDataContext.Provider>
+				<NavigationPanel />
+			</Provider>
 		);
 	}
 	return <Message>Loading user data...</Message>;

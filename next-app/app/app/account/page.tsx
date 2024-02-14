@@ -7,27 +7,23 @@ import {
 	DeleteListItem,
 } from "@/app/_components/listItems";
 import { deleteAccount, editUser } from "@/app/_lib/api";
-import { AppData, nameSchema } from "@/app/_lib/data";
-import { AppDataContext } from "@/app/_lib/useUserData";
+import { nameSchema } from "@/app/_lib/data";
+import { useAppSelector } from "@/app/_lib/hooks";
+import { updateAccount } from "@/app/_lib/slices/accountSettingsSlice";
 import { Formik, FormikErrors } from "formik";
-import { useSession, signOut } from "next-auth/react";
-import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import { useRouter } from "next/navigation";
-import { useContext } from "react";
+import { signOut } from "next-auth/react";
+import { useRouter } from "next/router";
+import { useDispatch } from "react-redux";
 
-function Account({
-	appData,
-	router,
-	fetchUserData,
-}: {
-	appData: AppData;
-	fetchUserData: () => void;
-	router: AppRouterInstance;
-}) {
+function Account(
+) {
+	const accountSettings = useAppSelector((app) => app.accountSettings);
+	const router = useRouter()
+	const dispatch = useDispatch();
 	return (
 		<CenterContainer>
 			<Formik
-				initialValues={{ name: appData.name }}
+				initialValues={{ name: accountSettings.name }}
 				validate={(values) => {
 					let errors: FormikErrors<{ name: string }> = {};
 					try {
@@ -39,7 +35,7 @@ function Account({
 				}}
 				onSubmit={(values, { setSubmitting }) => {
 					editUser({ name: values.name }).then((_resp) => {
-						fetchUserData();
+						dispatch(updateAccount({ name: values.name, email: accountSettings.email }))
 						setSubmitting(false);
 					})
 						.catch((err) => console.error(err));
@@ -59,14 +55,14 @@ function Account({
 								onChange={handleChange}
 							></input>
 							{errors.name}
-							{values.name != appData.name && !errors.name ? (
+							{values.name != accountSettings.name && !errors.name ? (
 								<button type="submit" disabled={isSubmitting}>
 									Save Changes
 								</button>
 							) : undefined}
 						</ListItem>
 						<ListItem>
-							<p className="text-left">{appData.email}</p>						</ListItem>
+							<p className="text-left">{accountSettings.email}</p>						</ListItem>
 					</form>
 				)}
 			</Formik>
@@ -82,20 +78,8 @@ function Account({
 }
 
 export default function AccountPage() {
-	const { data: session } = useSession();
-	const router = useRouter();
-	const appData = useContext(AppDataContext)
-	if (session === null) {
-		router.push("/");
-	} else if (session === undefined) {
-		return <p>Loading user</p>;
-	}
-
 	return (
 		<Account
-			appData={appData.data}
-			fetchUserData={appData.update}
-			router={router}
 		></Account>
 	);
 }

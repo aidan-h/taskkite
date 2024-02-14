@@ -6,7 +6,7 @@ import {
 	DeleteLabelEvent,
 	DeleteTaskEvent,
 	EditTaskEvent,
-	Project,
+	ProjectData,
 	Task,
 } from "./data";
 import {
@@ -18,7 +18,7 @@ import {
 } from "./sync";
 
 
-function editTasks(project: Project, id: number, action: (task: Task) => Task): Task[] {
+function editTasks(project: ProjectData, id: number, action: (task: Task) => Task): Task[] {
 	const index = project.tasks.findIndex((task) => task.id == id);
 	if (index == -1) {
 		console.error("couldn't apply event to unfound task", project);
@@ -29,7 +29,7 @@ function editTasks(project: Project, id: number, action: (task: Task) => Task): 
 	return tasks
 }
 
-function applyEvent(project: Project, [name, data]: ClientEvent): Project {
+function applyEvent(project: ProjectData, [name, data]: ClientEvent): ProjectData {
 	if (name == "createTask") {
 		const event = data as CreateTaskEvent;
 		return {
@@ -126,17 +126,17 @@ function applyEvent(project: Project, [name, data]: ClientEvent): Project {
 export type ProjectSync = {
 	id: number;
 	emit: PushEvent<ClientEvent>;
-	data: Project | undefined;
+	data: ProjectData | undefined;
 	status: SyncStatus;
 	fetch: () => void;
 }
 
 export interface ProjectSyncParameters {
-	shadow: Shadow<Project, ClientEvent> | undefined;
-	setShadow: (shadow: Shadow<Project, ClientEvent> | undefined) => void;
+	shadow: Shadow<ProjectData, ClientEvent> | undefined;
+	setShadow: (shadow: Shadow<ProjectData, ClientEvent> | undefined) => void;
 	id: number;
-	state: SyncState<Project>;
-	setState: (state: SyncState<Project>) => void;
+	state: SyncState<ProjectData>;
+	setState: (state: SyncState<ProjectData>) => void;
 	fetch: () => void;
 }
 
@@ -149,7 +149,7 @@ export function createProjectSync(p: ProjectSyncParameters): ProjectSync {
 		emit: getPushEvent(
 			(events, data) =>
 				syncProject({
-					projectId: data.id,
+					projectId: p.id,
 					changes: events,
 					index: data.historyCount,
 				}),

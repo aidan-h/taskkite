@@ -1,21 +1,21 @@
 "use client";
 import { Formik, FormikErrors } from "formik";
 import { useRouter } from "next/navigation";
-import { useContext, useState } from "react";
-import { nameSchema } from "../_lib/data";
+import { useState } from "react";
+import { ProjectData, nameSchema } from "../_lib/data";
 import { fromZodError } from "zod-validation-error";
 import { stringify } from "querystring";
-import { AppDataContext } from "../_lib/useUserData";
 import { createProject } from "../_lib/api";
 import { CenterContainer } from "../_components/CenterContainer";
 import {
 	SecondaryListItemButton,
 } from "../_components/listItems";
 import SubmitCancel from "../_components/SubmitCancel";
-import { ProjectSync } from "../_lib/projectSync";
 import { ActiveTaskList } from "../_components/TaskList";
-import { ProjectContext, createProjectInterface } from "../_lib/ProjectContext";
 import Title from "../_components/Title";
+import { useAppSelector } from "../_lib/hooks";
+import { useDispatch } from "react-redux";
+import { Project, addProject } from "../_lib/slices/projectsSlice";
 
 interface FormProps {
 	name: string;
@@ -27,7 +27,8 @@ function CreateProjectForm({
 	setCreateProject: (value: boolean) => void;
 }) {
 	const [err, setErr] = useState(null as null | string);
-	const appData = useContext(AppDataContext);
+	const appData = useAppSelector((data) => data);
+	const dispatch = useDispatch();
 
 	return (
 		<Formik
@@ -41,8 +42,8 @@ function CreateProjectForm({
 			}}
 			onSubmit={(values, { setSubmitting }) => {
 				createProject(values.name)
-					.then(() => {
-						appData.update();
+					.then(({ id }) => {
+						dispatch(addProject({ data: { tasks: [], historyCount: 0, taskCount: 0 }, name: values.name, id: id, owner: appData.accountSettings.email }));
 						setSubmitting(false);
 						setCreateProject(false);
 					})
@@ -95,20 +96,17 @@ function CreateProjectButton() {
 	return <CreateProjectForm setCreateProject={setCreateProject} />;
 }
 
-function ProjectDueToday({ project }: { project: ProjectSync }) {
+function ProjectDueToday({ data, project }: { project: Project, data: ProjectData }) {
 	const router = useRouter()
-	const pInterface = createProjectInterface(project);
-	if (!pInterface)
-		return <div>Loading</div>
-	return <ProjectContext.Provider value={pInterface}>
-		<button className="block mb-4 text-xl font-bold underline-offset-8 decoration-indigo-400 decoration-4 underline" onClick={() => router.push("/app/project/" + project.id)}>{project.data.name}</button>
-		<ActiveTaskList project={project.data} />
-	</ProjectContext.Provider>
+	return <div>
+		<button className="block mb-4 text-xl font-bold underline-offset-8 decoration-indigo-400 decoration-4 underline" onClick={() => router.push("/app/project/" + project.id)}>{project.name}</button>
+		<ActiveTaskList projectId={project.id} project={data} />
+	</div>
 }
 
 function DueToday() {
-	const { projects } = useContext(AppDataContext)
-	return projects.map((project) => <ProjectDueToday key={project.id} project={project} />)
+	const projects = useAppSelector((data) => data.projects)
+	return projects.map((project) => project.data ? <ProjectDueToday key={project.id} data={project.data} project={project} /> : <>loading</>)
 
 }
 export default function Home() {

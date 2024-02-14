@@ -1,11 +1,12 @@
 "use client";
-import { ReactNode, useContext } from "react";
+import { ReactNode } from "react";
 import Image from "next/image"
 import { DateTime } from "luxon";
 import { DeleteTaskEvent, EditTaskEvent, Task } from "../_lib/data";
 import { Labels } from "./TaskCreation";
 import { ListItem, SecondaryListItem } from "./listItems";
-import { ProjectContext } from "../_lib/ProjectContext";
+import { useDispatch } from "react-redux";
+import { editTask } from "../_lib/slices/projectsSlice";
 
 export type DeleteTask = (e: DeleteTaskEvent) => void;
 export type EditTask = (e: EditTaskEvent) => void;
@@ -25,7 +26,7 @@ function dateToDueString(dateTime: DateTime): [string, DueState] {
 	if (diffInDays == 1)
 		return ["Tomorrow", DueState.FUTURE]
 	if (diffInDays <= 7)
-		return [dateTime.weekdayLong, DueState.FUTURE]
+		return [dateTime.weekdayLong!, DueState.FUTURE]
 	return [dateTime.monthShort + " " + dateTime.daysInMonth, DueState.FUTURE]
 }
 
@@ -59,8 +60,8 @@ function DueComponent({ children, state }: { children: ReactNode, state: DueStat
 	return <p className="text-left sm:text-right sm:absolute sm:top-0 sm:right-0">{children}</p>
 }
 
-export default function TaskComponent({ task, openTask }: { task: Task; openTask: () => void }) {
-	const { editTask } = useContext(ProjectContext)
+export default function TaskComponent({ task, openTask, projectId }: { task: Task, projectId: number, openTask: () => void }) {
+	const dispatch = useDispatch()
 	const due = getDueString(task)
 	const b = <div className="ml-6 relative">
 		<h2 className="text-md text-left">{task.name}</h2>
@@ -71,11 +72,11 @@ export default function TaskComponent({ task, openTask }: { task: Task; openTask
 	if (task.completed)
 		return (
 			<SecondaryListItem
-				onClick={() => editTask({ id: task.id, completed: false })}>
+				onClick={() => dispatch(editTask({ ...task, projectId: projectId, completed: false }))}>
 				{b}
 				<div
 					className="absolute left-0 top-0 h-full w-10"
-					onClick={(e) => { e.stopPropagation(); editTask({ id: task.id, completed: false }) }}
+					onClick={(e) => { e.stopPropagation(); dispatch(editTask({ ...task, projectId: projectId, completed: false })) }}
 				>
 					<Image width={20} height={20} className="absolute left-3 top-5 dark:invert" src="/check_box.svg" alt="complete box" />
 				</div>
@@ -88,7 +89,7 @@ export default function TaskComponent({ task, openTask }: { task: Task; openTask
 			{b}
 			<div
 				className="absolute left-0 top-0 h-full w-10"
-				onClick={(e) => { e.stopPropagation(); editTask({ id: task.id, completed: true }) }}
+				onClick={(e) => { e.stopPropagation(); dispatch(editTask({ ...task, projectId: projectId, completed: true })) }}
 			>
 				<Image width={20} height={20} className="absolute left-3 top-5 dark:invert" src="/check_box_outline_blank.svg" alt="incomplete box" />
 			</div>

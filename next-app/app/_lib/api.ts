@@ -4,9 +4,10 @@ import {
 	SyncRequest,
 	ClientEvent,
 	AppData,
-	Project,
+	ProjectData,
 	AffectProject,
 	EditUserRequest,
+	CreateProjectResponse,
 } from "./data";
 
 async function getData<T, D>(url: string, data: D): Promise<T> {
@@ -16,8 +17,8 @@ async function getData<T, D>(url: string, data: D): Promise<T> {
 	throw text;
 }
 
-export async function createProject(name: string) {
-	await getData("/api/project/create", { name: name });
+export async function createProject(name: string): Promise<CreateProjectResponse> {
+	return await getData("/api/project/create", { name: name });
 }
 
 export async function deleteProject(id: number) {
@@ -40,6 +41,6 @@ export async function editUser(req: EditUserRequest) {
 	await getData("/api/editAccount", req)
 }
 
-export async function getProject(req: AffectProject): Promise<Project> {
+export async function getProject(req: AffectProject): Promise<ProjectData> {
 	return await getData("/api/project/get", req);
 }

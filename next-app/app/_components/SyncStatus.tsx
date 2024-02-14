@@ -1,11 +1,8 @@
 "use client";
-import { useContext } from "react";
 import { SyncStatus as Status, syncStatusText } from "../_lib/sync";
 import SecondaryButton from "./SecondaryButton";
-import { ProjectContext } from "../_lib/ProjectContext";
 
-export default function SyncStatus() {
-	const { sync, status } = useContext(ProjectContext);
+export default function SyncStatus({ sync, status }: { sync: () => void, status: Status }) {
 	if (status == Status.PENDING)
 		return <div className="absolute left-0 bottom-0 m-4">
 			<div>Syncing</div>
