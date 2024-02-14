@@ -13,7 +13,9 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			<body className={inter.className + " bg-slate-200"}>
-				<SessionProvider>{children}</SessionProvider>
+				<main>
+					<SessionProvider>{children}</SessionProvider>
+				</main>
 			</body>
 		</html>
 	);
