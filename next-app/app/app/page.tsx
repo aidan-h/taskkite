@@ -7,16 +7,19 @@ import { fromZodError } from "zod-validation-error";
 import { stringify } from "querystring";
 import { AppDataContext } from "../_lib/useUserData";
 import { createProject } from "../_lib/api";
+import AccountButton from "../_components/AccountButton";
+import { CenterContainer } from "../_components/CenterContainer";
+import { CreateListItemButton, ListItemButton } from "../_components/listItems";
+import SubmitCancel from "../_components/SubmitCancel";
 
 function ProjectItem({ project }: { project: ProjectIdentifier }) {
 	const router = useRouter();
 	return (
-		<button
-			className="text-center text-lg p-4 rounded shadow hover:shadow-lg transition visible bg-slate-100 w-full block mb-6"
+		<ListItemButton
 			onClick={() => router.push("/app/project/" + project.id)}
 		>
 			{project.name}
-		</button>
+		</ListItemButton>
 	);
 }
 
@@ -78,12 +81,7 @@ function CreateProjectForm({
 							onChange={handleChange}
 						/>
 						<br />
-						<div className="absolute right-6 top-6">
-							<button className="px-2 mx-3 rounded shadow" onClick={() => setCreateProject(false)}>Cancel</button>
-							<button className="bg-slate-500 px-2 rounded shadow text-slate-100" type="submit" disabled={isSubmitting}>
-								Create
-							</button>
-						</div>
+						<SubmitCancel isSubmitting={isSubmitting} cancel={() => setCreateProject(false)} submitText="Create" />
 						<p className="mt-2 text-slate-700">
 							{isSubmitting ? <p>Submitting form</p> : undefined}
 							{errors.name}
@@ -94,33 +92,28 @@ function CreateProjectForm({
 		</Formik>
 	);
 }
+
 function CreateProjectButton() {
 	const [createProject, setCreateProject] = useState(false);
 
 	if (!createProject)
 		return (
-			<button
-				className="transition hover:shadow-lg text-center text-lg rounded shadow p-4 bg-slate-200 w-full block mb-6"
+			<CreateListItemButton
 				onClick={() => setCreateProject(true)}
 			>
 				Create Project
-			</button>
+			</CreateListItemButton>
 		);
 	return <CreateProjectForm setCreateProject={setCreateProject} />;
 }
 
 export default function Home() {
-	const router = useRouter();
 
 	return (
-		<div className="max-w-lg mt-24 mx-auto">
-			<ProjectList></ProjectList>
-			<CreateProjectButton></CreateProjectButton>
-			<br />
-			<button
-				className="bg-slate-500 rounded-full p-6 absolute left-6 top-6"
-				onClick={() => router.push("/app/account")}
-			></button>
-		</div>
+		<CenterContainer>
+			<ProjectList />
+			<CreateProjectButton />
+			<AccountButton />
+		</CenterContainer>
 	);
 }
