@@ -6,8 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-		"format": "npx prettier ./app --write"
+    "lint": "eslint app",
+    "format": "npx prettier ./app --write"
   },
   "dependencies": {
     "@types/mysql": "^2.15.25",
@@ -20,6 +20,7 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@next/eslint-plugin-next": "^14.1.0",
     "@stylistic/eslint-plugin-ts": "^1.5.4",
     "@types/node": "^20",
     "@types/react": "^18",
@@ -32,5 +33,7 @@
     "prettier": "3.2.4",
     "tailwindcss": "^3.3.0",
     "typescript": "^5"
-  }
+  },
+	"eslintIgnore": [],
+	"type": "module"
 }
