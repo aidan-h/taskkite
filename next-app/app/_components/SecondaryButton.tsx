@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 
 export default function SecondaryButton({ children, onClick }: { children: ReactNode, onClick: () => void }) {
 	return <button
