@@ -2,7 +2,7 @@ import { RowDataPacket } from "mysql2";
 import { UserSession } from "@/app/_lib/session";
 import { Connection } from "mysql2/promise";
 import { handleClientGetReq } from "@/app/_server/handleClient";
-import { AppData, ProjectResponse, } from "@/app/_lib/schemas";
+import { AppData, ProjectResponse, nameSchema, } from "@/app/_lib/schemas";
 import getProject from "@/app/_server/getProject";
 
 const GET_PROJECTS_STATEMENT = "SELECT id FROM project WHERE owner = ?";
@@ -71,9 +71,12 @@ async function createUser(
 	session: UserSession,
 ): Promise<AppData> {
 	await db.execute(CREATE_USER_STATEMENT, [session.email, session.name]);
+	let name = session.name.trim();
+	const n = nameSchema.safeParse(name);
+	if (!n.success) name = "New User";
 	return {
 		email: session.email,
-		name: session.name,
+		name,
 		projects: { count: 0, data: [] },
 	};
 }
