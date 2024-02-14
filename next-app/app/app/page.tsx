@@ -9,7 +9,7 @@ import { AppDataContext } from "../_lib/useUserData";
 import { createProject } from "../_lib/api";
 import AccountButton from "../_components/AccountButton";
 import { CenterContainer } from "../_components/CenterContainer";
-import { CreateListItemButton, ListItemButton } from "../_components/listItems";
+import { SecondaryListItemButton, ListItemButton } from "../_components/listItems";
 import SubmitCancel from "../_components/SubmitCancel";
 
 function ProjectItem({ project }: { project: ProjectIdentifier }) {
@@ -98,11 +98,11 @@ function CreateProjectButton() {
 
 	if (!createProject)
 		return (
-			<CreateListItemButton
+			<SecondaryListItemButton
 				onClick={() => setCreateProject(true)}
 			>
 				Create Project
-			</CreateListItemButton>
+			</SecondaryListItemButton>
 		);
 	return <CreateProjectForm setCreateProject={setCreateProject} />;
 }

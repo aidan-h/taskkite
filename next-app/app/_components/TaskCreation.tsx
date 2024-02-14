@@ -9,7 +9,7 @@ import { validateInputValue } from "@/app/_lib/formikHelpers";
 import { Formik, FormikErrors } from "formik";
 import { useState } from "react";
 import { EditTask } from "./TaskList";
-import { CreateListItemButton } from "./listItems";
+import { SecondaryListItemButton } from "./listItems";
 import SubmitCancel from "./SubmitCancel";
 
 function Form({
@@ -110,5 +110,5 @@ export default function TaskCreation({
 				}
 			/>
 		);
-	return <CreateListItemButton onClick={() => setActive(true)}>Create task</CreateListItemButton>;
+	return <SecondaryListItemButton onClick={() => setActive(true)}>Create task</SecondaryListItemButton>;
 }

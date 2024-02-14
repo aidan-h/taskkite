@@ -16,7 +16,7 @@ export function ListItemButton({ children, onClick }: { children: ReactNode; onC
 	</button>
 
 }
-export function CreateListItemButton({ children, onClick }: { children: ReactNode; onClick: () => void }) {
+export function SecondaryListItemButton({ children, onClick }: { children: ReactNode; onClick: () => void }) {
 	return (
 		<button
 			className="transition hover:shadow-lg text-center text-lg rounded shadow p-4 bg-slate-200 w-full block mb-4"
