@@ -18,7 +18,7 @@ export default function NavigationPanel() {
 			</button>
 			{projects.map((project) => (
 				<button
-					className="sm:mx-4 font-medium invisible sm:visible"
+					className="sm:mx-4 sm:block font-medium invisible sm:visible"
 					key={project.client.data.id}
 					onClick={() => router.push("/app/project/" + project.client.data.id)}
 				>
