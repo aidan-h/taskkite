@@ -9,8 +9,7 @@ import { SecondaryListItemButton } from "../_components/listItems";
 import SubmitCancel from "../_components/SubmitCancel";
 import { ActiveTaskList } from "../_components/TaskList";
 import Title from "../_components/Title";
-import { useAppSelector } from "../_lib/hooks";
-import { useDispatch } from "react-redux";
+import { useAppDispatch } from "../_lib/hooks";
 import useProjects from "../_lib/useProjects";
 import { createProject } from "../_lib/slices/projectsSlice";
 
@@ -23,8 +22,7 @@ function CreateProjectForm({
 }: {
 	setCreateProject: (value: boolean) => void;
 }) {
-	const appData = useAppSelector((data) => data);
-	const dispatch = useDispatch();
+	const dispatch = useAppDispatch();
 
 	return (
 		<Formik
@@ -38,12 +36,7 @@ function CreateProjectForm({
 			}}
 			onSubmit={(values, { setSubmitting }) => {
 				dispatch(
-					createProject({
-						client: {
-							data: { id: 2, tasks: [], owner: appData.accountSettings.email, name: values.name, taskCount: 0 },
-							historyCount: 0,
-						}
-					}),
+					createProject(values.name),
 				);
 				setSubmitting(false);
 				setCreateProject(false);

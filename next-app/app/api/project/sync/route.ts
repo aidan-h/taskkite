@@ -8,49 +8,17 @@ import {
 	DeleteLabelEvent,
 	ProjectEvent,
 	ProjectEvents,
+	UpdateNameEvent,
 } from "@/app/_lib/schemas";
 import { handleClientPostReq } from "@/app/_server/handleClient";
 import { isOfProject } from "@/app/_server/isOfProject";
 import { UserSession } from "@/app/_lib/session";
 import { Connection, RowDataPacket } from "mysql2/promise";
 import { ServerEventHandlers } from "@/app/_lib/sync";
+import getCount from "@/app/_server/getCount";
 
 const CREATE_TASK_STATEMENT =
 	"INSERT INTO task (project_id, id, name, description, archived, completed, due_date, due_time) VALUES (?, ?, ?, ?, false, false, ?, ?)";
-
-async function getCount(
-	db: Connection,
-	table: string,
-	column: string,
-	keyColumn: string,
-	id: number,
-): Promise<number> {
-	console.log("lock");
-	await db.query("LOCK TABLES " + table + " WRITE");
-	console.log("locked");
-	await db.execute(
-		"UPDATE " +
-		table +
-		" SET " +
-		column +
-		" = " +
-		column +
-		" + 1 WHERE " +
-		keyColumn +
-		" = ?",
-		[id],
-	);
-	console.log("updated");
-	const [rows] = await db.execute<RowDataPacket[]>(
-		"SELECT " + column + " FROM " + table + " WHERE " + keyColumn + " = ?",
-		[id],
-	);
-	console.log("unlocking");
-	await db.query("UNLOCK TABLES");
-	console.log("unlocked");
-	if (rows.length == 0) throw "couldn't find count for " + table + " " + id;
-	return rows[0][column];
-}
 
 async function getTaskCount(
 	db: Connection,
@@ -142,12 +110,22 @@ async function deleteTask(
 	await db.execute(DELETE_TASK_LABELS_STATEMENT, [data.id]);
 }
 
+const UPDATE_NAME_STATEMENT = "UPDATE project SET name = ? WHERE id = ?";
+
+async function updateName(
+	db: Connection,
+	data: UpdateNameEvent,
+) {
+	await db.execute(UPDATE_NAME_STATEMENT, [data.name, data.projectId]);
+}
+
 const handlers: ServerEventHandlers<ProjectEvents, Connection, Promise<void>> = {
 	createTask: createTask,
 	deleteTask: deleteTask,
 	deleteLabel: deleteLabel,
 	addLabel: addLabel,
-	editTask: editTask
+	editTask: editTask,
+	updateName: updateName,
 }
 
 const ADD_PROJECT_HISTORY_STATEMENT =

@@ -7,6 +7,9 @@ import {
 import { EventHandlers } from "./sync";
 
 export const clientProjectEventHandlers: EventHandlers<ProjectEvents, Project> = {
+	updateName: ({ data }, event) => {
+		data.name = event.name
+	},
 	createTask: ({ data, historyCount }, event) => {
 		data.tasks.push(
 			{

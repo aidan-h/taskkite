@@ -5,7 +5,7 @@ import {
 import { ArrayPush, ArraySync, syncArraySlice } from "../syncSlice";
 import { clientProjectEventHandlers } from "../clientProjectEventHandlers";
 import { SyncData, Event, createSyncData, InitialState } from "../sync";
-import { syncProjectFetch } from "../api";
+import { createProjectFetch, syncProjectFetch } from "../api";
 import { Draft, PayloadAction, ReducerCreators } from "@reduxjs/toolkit";
 
 function n(
@@ -14,8 +14,21 @@ function n(
 	push: ArrayPush<Project, ProjectEvents>,
 ) {
 	return {
-		createProject: create.reducer((syncs, action: PayloadAction<InitialState<Project>>) => {
-			syncs.push(createSyncData(action.payload) as Draft<SyncData<Project, ProjectEvents>>)
+		createProject: create.asyncThunk(async (name: string, thunkApi) => {
+			return await createProjectFetch(name)
+		}, {
+			fulfilled: (state, action) => {
+				state.push(
+					createSyncData({
+						client: {
+							data: action.payload,
+							historyCount: 0
+						}
+					})
+
+				);
+
+			}
 		}),
 		syncProject: sync,
 		pushEvent: push,

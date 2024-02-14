@@ -32,7 +32,7 @@ async function getSharedProjectsId(
 }
 
 const GET_USER_STATEMENT =
-	"SELECT (name, email, project_count) FROM user WHERE email = ?";
+	"SELECT name, email, project_count FROM user WHERE email = ?";
 
 async function getAppData(db: Connection, email: string): Promise<AppData> {
 	const [results, _fields] = await db.execute<RowDataPacket[]>(
@@ -64,7 +64,7 @@ async function getAppData(db: Connection, email: string): Promise<AppData> {
 	};
 }
 
-const CREATE_USER_STATEMENT = "INSERT INTO user VALUES (?, ?)";
+const CREATE_USER_STATEMENT = "INSERT INTO user (email, name) VALUES (?, ?)";
 
 async function createUser(
 	db: Connection,

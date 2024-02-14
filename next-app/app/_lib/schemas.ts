@@ -75,14 +75,16 @@ export type Task = z.infer<typeof taskSchema>;
 const editTaskSchema = taskIdSchema
 	.merge(taskAfterBaseSchema)
 	.merge(affectProjectSchema);
+export const updateNameSchema = affectProjectSchema.merge(z.object({ name: nameSchema }));
 export type CreateTaskEvent = z.infer<typeof createTaskSchema>;
 export type EditTaskEvent = z.infer<typeof editTaskSchema>;
 export type DeleteLabelEvent = z.infer<typeof affectLabelSchema>;
 export type AddLabelEvent = DeleteLabelEvent;
 export type DeleteTaskEvent = z.infer<typeof affectTaskSchema>;
-export type CreateProjectEvent = z.infer<typeof nameSchema>
+export type UpdateNameEvent = z.infer<typeof updateNameSchema>
 
 export interface ProjectEvents {
+	updateName: UpdateNameEvent,
 	createTask: CreateTaskEvent,
 	editTask: EditTaskEvent,
 	deleteTask: DeleteTaskEvent,
@@ -97,6 +99,7 @@ export type ProjectEventSchemas = {
 }
 
 export const projectEventSchemas: ProjectEventSchemas = {
+	updateName: updateNameSchema,
 	createTask: createTaskSchema,
 	editTask: editTaskSchema,
 	deleteTask: affectTaskSchema,
@@ -156,10 +159,6 @@ export type AccountSettings = {
 export type ProjectResponse = Project & {
 	historyCount: number,
 };
-
-export interface CreateProjectResponse {
-	id: number;
-}
 
 export type AppData = AccountSettings & {
 	projects: {

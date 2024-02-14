@@ -5,9 +5,9 @@ import {
 	AppData,
 	ProjectData,
 	AffectProject,
-	CreateProjectResponse,
 	ProjectEvent,
 	EditUserRequest,
+	ProjectResponse,
 } from "./schemas";
 
 async function getData<T, D>(url: string, data: D): Promise<T> {
@@ -17,9 +17,9 @@ async function getData<T, D>(url: string, data: D): Promise<T> {
 	throw text;
 }
 
-export async function createProject(
+export async function createProjectFetch(
 	name: string,
-): Promise<CreateProjectResponse> {
+): Promise<ProjectResponse> {
 	return await getData("/api/project/create", { name: name });
 }
 

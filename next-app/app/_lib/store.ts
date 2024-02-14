@@ -3,14 +3,12 @@ import { AppData, Project, ProjectEvents } from "./schemas";
 import { projectsSlice } from "./slices/projectsSlice";
 import { accountSettingsSlice } from "./slices/accountSettingsSlice";
 import { SyncData, SyncState, createSyncData } from "./sync";
-import { projectCountSlice } from "./slices/projectCountSlice";
 
 export function createStore(appData: AppData) {
 	return configureStore({
 		reducer: {
 			accountSettings: accountSettingsSlice.reducer,
 			projects: projectsSlice.reducer,
-			projectCount: projectCountSlice.reducer,
 		},
 		preloadedState: {
 			accountSettings: {
@@ -41,8 +39,7 @@ export function createStore(appData: AppData) {
 					},
 					syncState: SyncState.SYNCED,
 				})
-			}),
-			projectCount: appData.projects.count,
+			})
 		},
 	});
 }
