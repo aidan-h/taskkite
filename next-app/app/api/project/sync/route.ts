@@ -64,6 +64,7 @@ async function getProjectHistoryCount(
 	return await getCount(db, "project", "history_count", "id", projectId);
 }
 
+const ADD_LABEL_STATEMENT = `INSERT INTO label (project_id, task_id, name) VALUES (?, ?, ?)`;
 async function createTask(
 	db: Connection,
 	data: CreateTaskEvent,
@@ -76,18 +77,27 @@ async function createTask(
 		data.name,
 		data.description ? data.description : "",
 	]);
+	if (data.labels)
+		for (const label of data.labels)
+			await db.execute(ADD_LABEL_STATEMENT, [projectId, count, label]);
 }
 
-const ADD_LABEL_STATEMENT = `INSERT INTO label (project_id, id, name) VALUES (?, ?, ?)`
+const DELETE_LABEL_STATEMENT = `DELETE FROM label WHERE project_id = ? AND task_id = ? AND name = ?`;
 
-const DELETE_LABEL_STATEMENT = `DELETE FROM label WHERE project_id = ? AND id = ? AND name = ?`
-
-async function deleteLabel(db: Connection, data: DeleteLabelEvent, projectId: number) {
-	await db.execute(DELETE_LABEL_STATEMENT, [projectId, data.id, data.name])
+async function deleteLabel(
+	db: Connection,
+	data: DeleteLabelEvent,
+	projectId: number,
+) {
+	await db.execute(DELETE_LABEL_STATEMENT, [projectId, data.id, data.name]);
 }
 
-async function addLabel(db: Connection, data: AddLabelEvent, projectId: number) {
-	await db.execute(ADD_LABEL_STATEMENT, [projectId, data.id, data.name])
+async function addLabel(
+	db: Connection,
+	data: AddLabelEvent,
+	projectId: number,
+) {
+	await db.execute(ADD_LABEL_STATEMENT, [projectId, data.id, data.name]);
 }
 
 async function editTask(
@@ -96,20 +106,25 @@ async function editTask(
 	projectId: number,
 ) {
 	let statement = "UPDATE task SET ";
-	const fields: (keyof EditTaskEvent)[] = ["name", "completed", "description", "archived"]
-	let expressions = fields.filter((field) => data[field] != undefined)
-	let values = expressions.map((field) => data[field])
-	if (fields.length == 0) return
+	const fields: (keyof EditTaskEvent)[] = [
+		"name",
+		"completed",
+		"description",
+		"archived",
+	];
+	let expressions = fields.filter((field) => data[field] != undefined);
+	let values = expressions.map((field) => data[field]);
+	if (fields.length == 0) return;
 	for (let i = 0; i < expressions.length - 1; i++) {
-		const field = fields[i]
+		const field = fields[i];
 		statement += field + " = ?, ";
 	}
-	const field = fields[fields.length - 1]
-	statement += field + " = ? WHERE project_id = ? AND id = ?"
-	values.push(projectId)
-	values.push(data.id)
+	const field = fields[fields.length - 1];
+	statement += field + " = ? WHERE project_id = ? AND id = ?";
+	values.push(projectId);
+	values.push(data.id);
 
-	await db.execute(statement, values)
+	await db.execute(statement, values);
 }
 
 const DELETE_TASK_STATEMENT =
@@ -134,7 +149,7 @@ const handlers = new Map<
 	["editTask", editTask],
 	["deleteTask", deleteTask],
 	["deleteLabel", deleteLabel],
-	["addLabel", addLabel]
+	["addLabel", addLabel],
 ]);
 
 const ADD_PROJECT_HISTORY_STATEMENT =

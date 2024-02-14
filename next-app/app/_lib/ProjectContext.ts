@@ -1,6 +1,12 @@
 import { createContext } from "react";
-import { Project } from "./data";
-import { ProjectSync } from "./useUserData";
+import {
+  AddLabelEvent,
+  CreateTaskEvent,
+  DeleteLabelEvent,
+  DeleteTaskEvent,
+  EditTaskEvent,
+  Project,
+} from "./data";
 
 const defaultProject = {
   id: -1,
@@ -12,12 +18,16 @@ const defaultProject = {
 };
 export const ProjectContext = createContext<{
   project: Project;
-  sync: ProjectSync;
+  createTask: (e: CreateTaskEvent) => void;
+  editTask: (e: EditTaskEvent) => void;
+  deleteTask: (e: DeleteTaskEvent) => void;
+  addLabel: (e: AddLabelEvent) => void;
+  deleteLabel: (e: DeleteLabelEvent) => void;
 }>({
   project: defaultProject,
-  sync: {
-    emit: () => {},
-    fetch: () => {},
-    data: defaultProject,
-  },
+  createTask: () => {},
+  editTask: () => {},
+  deleteTask: () => {},
+  addLabel: () => {},
+  deleteLabel: () => {},
 });

@@ -1,7 +1,6 @@
 "use client";
 import {
 	AddLabelEvent,
-	CreateTaskEvent,
 	DeleteLabelEvent,
 	Task,
 	descriptionSchema,
@@ -9,21 +8,23 @@ import {
 } from "@/app/_lib/data";
 import { validateInputValue } from "@/app/_lib/formikHelpers";
 import { Formik, FormikErrors } from "formik";
-import { useState } from "react";
-import { EditTask } from "./TaskList";
+import { ReactNode, useState } from "react";
 import { SecondaryListItemButton } from "./listItems";
 import SubmitCancel from "./SubmitCancel";
+import { ProjectContext } from "../_lib/ProjectContext";
 
 function Form({
 	close,
 	onSubmit,
 	text,
 	task,
+	children,
 }: {
 	task: Task;
 	text: string;
 	close: () => void;
 	onSubmit: (task: Task) => void;
+	children?: ReactNode,
 }) {
 	return (
 		<Formik
@@ -52,73 +53,139 @@ function Form({
 			}}
 			initialValues={{ name: task.name, description: task.description }}
 		>
-			{({ handleSubmit, isSubmitting, handleChange, values, errors }) => (
-				<form className="shadow-lg bg-slate-50 mb-4 relative rounded p-6" onSubmit={handleSubmit}>
-					<input
-						type="text"
-						className="mb-4 py-1 pl-2 w-full bg-slate-50 rounded shadow"
-						onChange={handleChange}
-						value={values.name}
-						name="name"
-					/>
-					<br />
-					{errors.name}
-					<textarea
-						className="w-full pl-2 mb-10 bg-slate-50 rounded shadow"
-
-						onChange={handleChange}
-						value={values.description}
-						name="description"
-					/>
-					{errors.description}
-					<br />
-					{isSubmitting ?? <SubmitCancel submit={handleSubmit} cancel={close} submitText={text} />}
-				</form>
+			{({ handleSubmit, submitForm, handleChange, values, errors }) => (
+				<div
+					className="shadow-lg bg-slate-50 mb-4 relative rounded p-6"
+				>
+					{children}
+					<form
+						onSubmit={handleSubmit}
+					>
+						<input
+							type="text"
+							className="mb-4 py-1 pl-2 w-full bg-slate-50 rounded shadow"
+							onChange={handleChange}
+							value={values.name}
+							name="name"
+						/>
+						<br />
+						{errors.name}
+						<textarea
+							className="w-full pl-2 mb-10 bg-slate-50 rounded shadow"
+							onChange={handleChange}
+							value={values.description}
+							name="description"
+						/>
+						{errors.description}
+						<br />
+						<SubmitCancel submit={submitForm} cancel={close} submitText={text} />
+					</form>
+				</div>
 			)}
 		</Formik>
 	);
 }
-export type AddLabel = (e: AddLabelEvent) => void
-export type DeleteLabel = (e: DeleteLabelEvent) => void
+export type AddLabel = (e: AddLabelEvent) => void;
+export type DeleteLabel = (e: DeleteLabelEvent) => void;
+
+export function AddLabelForm({ task, cancel }: { task: Task; cancel: () => void }) {
+	return <ProjectContext.Consumer>{({ addLabel }) => (<Formik initialValues={{ name: "" }} validate={(values) => {
+		let errors: FormikErrors<{ name: string }> = {}
+		validateInputValue(nameSchema, values.name, errors, "name");
+		return errors
+	}} onSubmit={(values, { setSubmitting }) => { addLabel({ name: values.name, id: task.id }); setSubmitting(false) }}>
+		{({ values, handleChange, isValid, submitForm, errors, handleSubmit }) => (
+			<form onSubmit={handleSubmit} className="inline">
+				<input
+					type="text"
+					className="mr-2 text-sm border-none focus:border-none pl-2 w-14 bg-slate-50 rounded shadow"
+					onChange={handleChange}
+					value={values.name}
+					name="name"
+				/>
+				{errors.name}
+				{isValid ? <SecondaryButton onClick={submitForm}>Add</SecondaryButton> : undefined}
+			</form>
+		)}
+	</Formik>)}</ProjectContext.Consumer>
+}
+
+function SecondaryButton({ children, onClick }: { children: ReactNode, onClick: () => void }) {
+	return <button
+		className="text-sm mr-1 px-1 bg-slate-500 text-slate-50 rounded"
+		onClick={onClick}
+	>
+		{children}
+	</button>
+}
+
+export function Labels({ labels, children, onClick }: { children?: ReactNode, labels?: string[], onClick: (name: string) => void }) {
+	return labels
+		? <div className="text-left mb-2">{labels.map((label) => (
+			<SecondaryButton
+				key={label}
+				onClick={() => onClick(label)}
+			>
+				{label}
+			</SecondaryButton>
+		))}{children}</div>
+		: undefined
+}
 
 export function TaskEditing({
-	editTask,
-	addLabel,
-	deleteLabel,
 	task,
 	close,
 }: {
 	close: () => void;
 	task: Task;
-	addLabel: AddLabel;
-	deleteLabel: DeleteLabel;
-	editTask: EditTask;
 }) {
-	return <div>
-		<Form text="Save" task={task} close={close} onSubmit={editTask} />
-	</div>;
+	const [addingLabel, setAddingLabel] = useState(false);
+	return (
+		<div>
+			<ProjectContext.Consumer>
+				{({ editTask, deleteLabel }) => (
+					<div>
+						<Form text="Save" task={task} close={close} onSubmit={editTask}>
+							<Labels labels={task.labels} onClick={(label) => deleteLabel({ id: task.id, name: label })}>
+								{addingLabel ? <AddLabelForm task={task} cancel={() => setAddingLabel(false)} /> : <SecondaryButton onClick={() => setAddingLabel(true)}>+</SecondaryButton>}
+							</Labels>
+						</Form>
+					</div>
+				)}
+			</ProjectContext.Consumer>
+		</div>
+	);
 }
 
-export default function TaskCreation({
-	createTask,
-}: {
-	createTask: (event: CreateTaskEvent) => void;
-}) {
+export default function TaskCreation() {
 	const [active, setActive] = useState(false);
 	if (active)
 		return (
-			<Form
-				text="Create"
-				task={{ name: "New Task", id: -1, archived: false, completed: false }}
-				close={() => setActive(false)}
-				onSubmit={(task) =>
-					createTask({
-						name: task.name,
-						description: task.description,
-						labels: task.labels,
-					})
-				}
-			/>
+			<ProjectContext.Consumer>
+				{({ createTask }) => (
+					<Form
+						text="Create"
+						task={{
+							name: "New Task",
+							id: -1,
+							archived: false,
+							completed: false,
+						}}
+						close={() => setActive(false)}
+						onSubmit={(task) =>
+							createTask({
+								name: task.name,
+								description: task.description,
+								labels: task.labels,
+							})
+						}
+					/>
+				)}
+			</ProjectContext.Consumer>
 		);
-	return <SecondaryListItemButton onClick={() => setActive(true)}>Create task</SecondaryListItemButton>;
+	return (
+		<SecondaryListItemButton onClick={() => setActive(true)}>
+			Create task
+		</SecondaryListItemButton>
+	);
 }
