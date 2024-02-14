@@ -64,7 +64,7 @@ function Form({
 		>
 			{({ handleSubmit, submitForm, handleChange, values, errors }) => (
 				<div
-					className="shadow-lg bg-slate-50 mb-4 relative rounded p-6"
+					className="shadow-lg bg-zinc-50 dark:bg-zinc-700 mb-4 relative rounded p-6"
 				>
 					{children}
 					<form
@@ -73,17 +73,17 @@ function Form({
 						<input
 							autoFocus={true}
 							type="text"
-							className="mb-4 py-1 pl-2 w-full bg-slate-50 rounded shadow"
+							className="mb-4 py-1 pl-2 w-full bg-zinc-50 dark:bg-zinc-600 rounded shadow"
 							onChange={handleChange}
 							value={values.name}
 							name="name"
 						/>
 						<br />
 						{errors.name}
-						<input type="date" value={values.dueDate} onChange={handleChange} name="dueDate" className="mr-2" />
-						<input type="time" step={2} value={values.dueTime} onChange={handleChange} name="dueTime" className="mb-4" />
+						<input type="date" value={values.dueDate} onChange={handleChange} name="dueDate" className="mr-2 px-1 rounded dark:bg-zinc-600" />
+						<input type="time" step={2} value={values.dueTime} onChange={handleChange} name="dueTime" className="mb-4 px-1 rounded dark:bg-zinc-600" />
 						<textarea
-							className="w-full pl-2 mb-10 bg-slate-50 rounded shadow"
+							className="w-full pl-2 mb-10 bg-zinc-50 dark:bg-zinc-600 rounded shadow"
 							onChange={handleChange}
 							value={values.description}
 							name="description"
@@ -113,7 +113,7 @@ export function AddLabelForm({ task }: { task: Task }) {
 			<form onSubmit={handleSubmit} className="inline">
 				<input
 					type="text"
-					className="mr-2 text-sm border-none focus:border-none pl-2 w-14 bg-slate-50 rounded shadow"
+					className="mr-2 text-sm border-none focus:border-none pl-2 w-14 bg-zinc-50 dark:bg-zinc-600 rounded shadow"
 					onChange={handleChange}
 					value={values.name}
 					name="name"

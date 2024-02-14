@@ -27,7 +27,7 @@ function Providers({
 }) {
 	return providers.map((provider) => (
 		<button
-			className="max-w-96 mx-auto font-medium block bg-slate-50 shadow rounded p-4"
+			className="max-w-96 mx-auto font-semibold block bg-slate-50 text-zinc-900 shadow rounded p-4"
 			key={provider.name}
 			onClick={() => {
 				setState(LoginState.Pending);

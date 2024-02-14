@@ -53,9 +53,9 @@ function getDueString(task: Task): [string, DueState] | undefined {
 
 function DueComponent({ children, state }: { children: ReactNode, state: DueState }) {
 	if (state == DueState.PAST)
-		return <p className="text-red-600 text-left sm:text-right sm:absolute sm:top-0 sm:right-0">{children}</p>
+		return <p className="text-red-500 text-left sm:text-right sm:absolute sm:top-0 sm:right-0">{children}</p>
 	if (state == DueState.SOON)
-		return <p className="text-orange-600 text-left sm:text-right sm:absolute sm:top-0 sm:right-0">{children}</p>
+		return <p className="text-orange-500 text-left sm:text-right sm:absolute sm:top-0 sm:right-0">{children}</p>
 	return <p className="text-left sm:text-right sm:absolute sm:top-0 sm:right-0">{children}</p>
 }
 
@@ -77,7 +77,7 @@ export default function TaskComponent({ task, openTask }: { task: Task; openTask
 					className="absolute left-0 top-0 h-full w-10"
 					onClick={(e) => { e.stopPropagation(); editTask({ id: task.id, completed: false }) }}
 				>
-					<Image width={20} height={20} className="absolute left-3 top-5" src="/check_box.svg" alt="complete box" />
+					<Image width={20} height={20} className="absolute left-3 top-5 dark:invert" src="/check_box.svg" alt="complete box" />
 				</div>
 			</SecondaryListItem>
 		);
@@ -90,7 +90,7 @@ export default function TaskComponent({ task, openTask }: { task: Task; openTask
 				className="absolute left-0 top-0 h-full w-10"
 				onClick={(e) => { e.stopPropagation(); editTask({ id: task.id, completed: true }) }}
 			>
-				<Image width={20} height={20} className="absolute left-3 top-5" src="/check_box_outline_blank.svg" alt="incomplete box" />
+				<Image width={20} height={20} className="absolute left-3 top-5 dark:invert" src="/check_box_outline_blank.svg" alt="incomplete box" />
 			</div>
 		</ListItem>
 	);

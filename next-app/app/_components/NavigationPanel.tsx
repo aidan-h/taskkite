@@ -6,7 +6,7 @@ import AccountButton from "./AccountButton";
 export default function NavigationPanel({ appData }: { appData: AppData }) {
 	const router = useRouter();
 	return (
-		<div className="fixed border-b-8 sm:border-b-0 sm:border-r-8 border-indigo-400 bg-slate-100 top-0 w-screen sm:h-screen flex sm:block sm:w-40">
+		<div className="fixed border-b-8 sm:border-b-0 sm:border-r-8 border-indigo-400 bg-zinc-100 text-zinc-900 dark:bg-zinc-700 dark:text-zinc-50 top-0 w-screen sm:h-screen flex sm:block sm:w-40">
 			<AccountButton />
 			<button
 				className="mx-4 text-xl mb-2 font-semibold underline-offset-8 decoration-indigo-400 decoration-4 underline"

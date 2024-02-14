@@ -13,7 +13,7 @@ export default function RootLayout({
 				<link rel="icon" href="/icon.png" type="image/png" />
 				<title>Taskkite</title>
 			</head>
-			<body className="bg-slate-50">
+			<body className="bg-zinc-50 text-zinc-900 dark:text-zinc-50 dark:bg-zinc-800">
 				<main>
 					<SessionProvider>{children}</SessionProvider>
 				</main>

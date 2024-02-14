@@ -51,7 +51,7 @@ function Account({
 						<ListItem>
 							<h2 className="text-left mb-2">Name</h2>
 							<input
-								className="w-full px-2 rounded shadow text-left"
+								className="w-full dark:text-zinc-900 px-2 rounded shadow text-left"
 								type="text"
 								value={values.name}
 								maxLength={20}
