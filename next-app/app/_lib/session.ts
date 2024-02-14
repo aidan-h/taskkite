@@ -9,7 +9,7 @@ export interface UserSession {
 	name: string
 }
 
-export async function getSession(req: NextRequest, res: NextResponse) {
+export async function getSession(req: NextRequest, res: NextResponse): Promise<UserSession> {
 	const session = await getServerSession(
 		req as unknown as NextApiRequest,
 		{
@@ -20,6 +20,6 @@ export async function getSession(req: NextRequest, res: NextResponse) {
 		authOptions
 	) as null | { user: UserSession }; //TODO validate data
 	if (session) return session.user
-	return null
+	throw "couldn't authenticate"
 }
 

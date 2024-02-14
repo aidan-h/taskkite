@@ -5,10 +5,18 @@ import { Formik, FormikErrors } from "formik";
 import { useSession, signOut } from "next-auth/react";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+
+function deleteAccount(router: AppRouterInstance) {
+	fetch("/api/user/delete", { method: "POST" }).catch((err) => console.error(err))
+	signOut();
+}
 
 // add UpdateUserData TODO
 function Account({ userData, router, fetchUserData }: { userData: UserData, fetchUserData: () => undefined, router: AppRouterInstance }) {
-	return <Formik initialValues={{ name: userData.name }}
+	const [deleteUser, setDeleteUser] = useState(false);
+
+	return <><Formik initialValues={{ name: userData.name }}
 		validate={values => {
 			let errors: FormikErrors<{ name: string }> = {};
 			const nameError = validateName(values.name);
@@ -17,10 +25,10 @@ function Account({ userData, router, fetchUserData }: { userData: UserData, fetc
 			return errors
 		}}
 		onSubmit={(values, { setSubmitting }) => {
-			fetch("/api/user/updateSettings", { method: "POST", body: JSON.stringify(values) }).then((resp) => {
+			fetch("/api/user/edit", { method: "POST", body: JSON.stringify(values) }).then((_resp) => {
 				fetchUserData()
 				setSubmitting(false)
-			})
+			}).catch((err) => console.error(err));
 		}}
 	>
 		{({ values, errors, handleSubmit, isSubmitting, handleChange }) => (<form onSubmit={handleSubmit}>
@@ -32,11 +40,23 @@ function Account({ userData, router, fetchUserData }: { userData: UserData, fetc
 			{(values.name != userData.name && !errors.name) ? <button type="submit" disabled={isSubmitting}>Save Changes</button> : undefined}
 			<h2>Email</h2>
 			<p>{userData.email}</p>
-			<button onClick={() => signOut()}>Sign Out</button><br></br>
-			<button onClick={() => router.push("/app")}>Back</button>
 		</form>)}
-
 	</Formik>
+		<button onClick={() => signOut()}>Sign Out</button><br></br>
+		<button onClick={() => router.push("/app")}>Back</button>
+		<button onClick={() => setDeleteUser(true)}>Delete Account</button>
+		{deleteUser ? <DeleteUserConfirmation close={() => setDeleteUser(false)} confirm={() => deleteAccount(router)}>
+		</DeleteUserConfirmation> : undefined}
+	</>
+}
+
+function DeleteUserConfirmation({ close, confirm }: { close: () => void, confirm: () => void }) {
+	return <div>
+		<h1>Are you sure you want to delete your account?</h1>
+		<button onClick={close}>Cancel</button>
+		<br></br>
+		<button onClick={() => { confirm(); close(); }}>Delete</button>
+	</div>
 }
 
 export default function AccountPage() {

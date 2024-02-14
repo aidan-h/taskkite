@@ -1,6 +1,6 @@
 import { getDb } from "@/app/_lib/mysql";
 import { NextRequest, NextResponse } from "next/server";
-import { getSession, unauthenticatedResponse } from "@/app/_lib/session";
+import { getSession } from "@/app/_lib/session";
 import { z } from "zod";
 import { validateName } from "@/app/_lib/data";
 import { error } from "console";
@@ -17,8 +17,6 @@ export async function POST(req: NextRequest, res: NextResponse) {
 
 	const db = await getDb();
 	const session = await getSession(req, res);
-	if (!session)
-		return unauthenticatedResponse
 
 	console.log("changeSettings", data)
 	await db.query<RowDataPacket[]>('UPDATE user SET name=' + db.escape(data.name) + ' WHERE email=' + db.escape(session.email));

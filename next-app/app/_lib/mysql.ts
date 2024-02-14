@@ -4,6 +4,7 @@ let storedDb: mysql.Connection | undefined;
 export async function getDb() {
 	if (storedDb) return storedDb;
 	storedDb = await mysql.createConnection({
+		multipleStatements: true,
 		host: process.env.MYSQL_HOST,
 		user: process.env.MYSQL_USER,
 		password: process.env.MYSQL_LOGIN,
