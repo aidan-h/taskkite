@@ -75,11 +75,11 @@ async function createTask(
 		projectId,
 		count,
 		data.name,
-		data.description ? data.description : "",
+		data.description ?? "", data.dueDate ?? null, data.dueTime ?? null
 	]);
 	if (data.labels)
 		for (const label of data.labels)
-			await db.execute(ADD_LABEL_STATEMENT, [projectId, count, label, data.dueDate, data.dueTime]);
+			await db.execute(ADD_LABEL_STATEMENT, [projectId, count, label]);
 }
 
 const DELETE_LABEL_STATEMENT = `DELETE FROM label WHERE project_id = ? AND task_id = ? AND name = ?`;

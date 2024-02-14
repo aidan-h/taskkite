@@ -63,6 +63,8 @@ function applyEvent(project: Project, [name, data]: ClientEvent): Project {
 					description: event.description,
 					labels: event.labels,
 					id: project.historyCount,
+					dueDate: event.dueDate,
+					dueTime: event.dueTime
 				},
 			],
 			historyCount: project.historyCount + 1,

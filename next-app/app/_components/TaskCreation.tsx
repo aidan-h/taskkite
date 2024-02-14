@@ -179,6 +179,8 @@ export default function TaskCreation() {
 								name: task.name,
 								description: task.description,
 								labels: task.labels,
+								dueTime: task.dueTime,
+								dueDate: task.dueDate,
 							})
 						}
 					/>

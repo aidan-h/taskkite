@@ -22,6 +22,15 @@ function dateToDueString(dateTime: DateTime): string {
 	return "In " + diffInDays + " days"
 }
 
+function getTaskDateTime(task: Task): DateTime | undefined {
+	if (task.dueDate)
+		if (task.dueTime) {
+			return DateTime.fromSQL(task.dueDate + " " + task.dueTime)
+		} else
+			return DateTime.fromSQL(task.dueDate)
+	return undefined
+}
+
 function getDueString(task: Task): string | undefined {
 	if (!task.dueDate) return ""
 
@@ -90,6 +99,20 @@ function TaskComponent({ task, openTask }: { task: Task; openTask: () => void })
 	);
 }
 
+function sortTasks(a: Task, b: Task): number {
+	const aT = getTaskDateTime(a)
+	const bT = getTaskDateTime(b)
+	if (aT == undefined)
+		return bT == undefined ? 0 : 1
+	if (bT == undefined)
+		return -1
+	if (aT < bT)
+		return -1
+	if (aT == bT)
+		return 0
+	return 1
+
+}
 export function TaskList() {
 	const [taskEditing, setTaskEditing] = useState(
 		undefined as undefined | number,
@@ -100,6 +123,7 @@ export function TaskList() {
 				<div>
 					{project.tasks
 						.filter((task) => !task.archived)
+						.sort(sortTasks)
 						.map((task) => {
 							if (task.id == taskEditing)
 								return (
