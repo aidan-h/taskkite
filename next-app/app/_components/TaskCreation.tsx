@@ -12,6 +12,7 @@ import { ReactNode, useState } from "react";
 import { SecondaryListItemButton } from "./listItems";
 import SubmitCancel from "./SubmitCancel";
 import { ProjectContext } from "../_lib/ProjectContext";
+import SecondaryButton from "./SecondaryButton";
 
 function Form({
 	close,
@@ -108,15 +109,6 @@ export function AddLabelForm({ task, cancel }: { task: Task; cancel: () => void 
 			</form>
 		)}
 	</Formik>)}</ProjectContext.Consumer>
-}
-
-function SecondaryButton({ children, onClick }: { children: ReactNode, onClick: () => void }) {
-	return <button
-		className="text-sm mr-1 px-1 bg-slate-500 text-slate-50 rounded"
-		onClick={onClick}
-	>
-		{children}
-	</button>
 }
 
 export function Labels({ labels, children, onClick }: { children?: ReactNode, labels?: string[], onClick: (name: string) => void }) {
