@@ -85,6 +85,7 @@ export type EditTaskEvent = z.infer<typeof editTaskSchema>;
 export type DeleteLabelEvent = z.infer<typeof affectLabelSchema>;
 export type AddLabelEvent = DeleteLabelEvent;
 export type DeleteTaskEvent = z.infer<typeof taskIdSchema>;
+export const editUserSchema = z.object({ name: nameSchema })
 
 export type Task = z.infer<typeof taskSchema>;
 
@@ -108,6 +109,7 @@ export const syncRequestSchema = z.object({
 	changes: z.array(userEventSchema).optional(),
 });
 export type SyncRequest = z.infer<typeof syncRequestSchema>;
+export type EditUserRequest = z.infer<typeof editUserSchema>
 
 export interface ProjectIdentifier {
 	id: number;

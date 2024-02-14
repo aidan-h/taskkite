@@ -6,7 +6,7 @@ import {
 	ListItemButton,
 	DeleteListItem,
 } from "@/app/_components/listItems";
-import { deleteAccount } from "@/app/_lib/api";
+import { deleteAccount, editUser } from "@/app/_lib/api";
 import { AppData, nameSchema } from "@/app/_lib/data";
 import { AppDataContext } from "@/app/_lib/useUserData";
 import { Formik, FormikErrors } from "formik";
@@ -37,14 +37,10 @@ function Account({
 					return errors;
 				}}
 				onSubmit={(values, { setSubmitting }) => {
-					fetch("/api/user/edit", {
-						method: "POST",
-						body: JSON.stringify(values.name),
+					editUser({ name: values.name }).then((_resp) => {
+						fetchUserData();
+						setSubmitting(false);
 					})
-						.then((_resp) => {
-							fetchUserData();
-							setSubmitting(false);
-						})
 						.catch((err) => console.error(err));
 				}}
 			>
