@@ -10,6 +10,7 @@
     "format": "npx prettier ./app --write"
   },
   "dependencies": {
+    "@types/luxon": "^3.4.2",
     "formik": "^2.4.5",
     "luxon": "^3.4.4",
     "mysql2": "^3.8.0",

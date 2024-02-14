@@ -1,32 +1,46 @@
 import { useState } from "react";
+import { DateTime } from "luxon";
 import { DeleteTaskEvent, EditTaskEvent, Task } from "../_lib/data";
 import TaskCreation, { Labels, TaskEditing } from "./TaskCreation";
 import { ListItem, SecondaryListItem } from "./listItems";
 import BottomRightContainer from "./BottomRightContainer";
 import { ProjectContext } from "../_lib/ProjectContext";
 
-function tomorrow() {
-	const tomorrow = new Date();
-	tomorrow.setTime(tomorrow.getTime() + 24 * 60 * 60 * 1000);
-	return tomorrow;
-}
-
-function sameDay(a: Date, b: Date): boolean {
-	return (
-		a.getFullYear() == b.getFullYear() &&
-		a.getMonth() == b.getMonth() &&
-		a.getDate() == b.getDate()
-	);
-}
-
 export type DeleteTask = (e: DeleteTaskEvent) => void;
 export type EditTask = (e: EditTaskEvent) => void;
 
-function TaskWidget({ task, openTask }: { task: Task; openTask: () => void }) {
+function dateToDueString(dateTime: DateTime): string {
+	const diffInDays = Math.ceil(dateTime.diff(DateTime.now(), "days").as("days"))
+	if (diffInDays < 0)
+		return "Past due " + (-diffInDays) + " days ago"
+	if (diffInDays == 0)
+		return "Today"
+	if (diffInDays == 1)
+		return "Tomorrow"
+	if (diffInDays <= 7)
+		return "Next " + dateTime.weekdayLong
+	return "In " + diffInDays + " days"
+}
+
+function getDueString(task: Task): string | undefined {
+	if (!task.dueDate) return ""
+
+	const first = dateToDueString(DateTime.fromSQL(task.dueDate.toString()));
+
+	if (task.dueTime) {
+		return first + " at " + DateTime.fromSQL(task.dueTime).toLocaleString(DateTime.TIME_SIMPLE);
+	}
+
+
+	return first;
+}
+
+function TaskComponent({ task, openTask }: { task: Task; openTask: () => void }) {
+	const due = getDueString(task)
 	const b = <>
 		<h2 className="text-md text-left">{task.name}</h2>
 		<Labels labels={task.labels} onClick={() => { }} />
-		{task.dueDate ? <p className="text-left">{new Date(task.dueDate.toString() + " " + task.dueTime?.toString()).toLocaleString()}</p> : undefined}
+		{due ? <p className="text-left">{due}</p> : undefined}
 		<p className="text-slate-500 text-sm text-left mb-2">
 			{task.description}
 		</p>
@@ -96,11 +110,11 @@ export function TaskList() {
 									></TaskEditing>
 								);
 							return (
-								<TaskWidget
+								<TaskComponent
 									openTask={() => setTaskEditing(task.id)}
 									key={task.id}
 									task={task}
-								></TaskWidget>
+								></TaskComponent>
 							);
 						})}
 					<TaskCreation />
