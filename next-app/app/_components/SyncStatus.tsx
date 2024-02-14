@@ -1,3 +1,4 @@
+"use client";
 import { ProjectContext } from "../_lib/ProjectContext";
 import { SyncStatus as Status, syncStatusText } from "../_lib/sync";
 import SecondaryButton from "./SecondaryButton";
