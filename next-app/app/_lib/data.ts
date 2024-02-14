@@ -17,6 +17,10 @@ const taskIdSchema = z.object({
 	id: idSchema,
 })
 
+export const editProjectSchema = z.object({
+	name: nameSchema,
+})
+
 const createTaskSchema = z.object({
 	name: nameSchema,
 	description: descriptionSchema,

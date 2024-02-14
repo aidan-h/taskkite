@@ -4,20 +4,8 @@ import { Connection } from "mysql2/promise";
 import { handleClientGetReq } from "@/app/_lib/handleClient";
 import { AppData, Project } from "@/app/_lib/api";
 import { getProjectTasks } from "@/app/_lib/appDataQueries";
-const EDIT_USER_STATEMENT = "UPDATE user SET name = ? WHERE email = ?";
 
 const GET_PROJECTS_STATEMENT = "SELECT id, name FROM project WHERE owner = ?";
-const EDIT_PROJECT_STATEMENT =
-	"UPDATE project SET name = ? WHERE id = ?, owner = ?";
-
-async function editProject(
-	db: Connection,
-	name: string,
-	id: number,
-	owner: string,
-) {
-	await db.execute(EDIT_PROJECT_STATEMENT, [name, id, owner]);
-}
 interface ProjectIdentifier {
 	id: number,
 	name: string,
