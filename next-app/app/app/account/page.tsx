@@ -14,6 +14,7 @@ import { Formik, FormikErrors } from "formik";
 import { signOut } from "next-auth/react";
 import { useDispatch } from "react-redux";
 import { useRouter } from "next/navigation";
+import PrivacyPolicy from "@/app/_components/PrivacyPolicy";
 
 function Account() {
 	const accountSettings = useAppSelector((app) => app.accountSettings);
@@ -79,6 +80,7 @@ function Account() {
 				text="Delete Account"
 				confirmText="Are you sure you want to delete you account? This cannot be undone!"
 			/>
+			<PrivacyPolicy />
 		</CenterContainer>
 	);
 }
