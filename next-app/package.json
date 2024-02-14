@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+		"type-check": "tsc",
+    "docker": "docker build -t taskkite .",
     "start": "next start",
     "lint": "eslint app",
     "format": "npx prettier ./app --write"
@@ -13,7 +15,7 @@
     "@types/luxon": "^3.4.2",
     "formik": "^2.4.5",
     "luxon": "^3.4.4",
-    "mysql2": "^3.8.0",
+    "mysql2": "^3.9.1",
     "next": "^14.1.0",
     "next-auth": "^4.24.5",
     "react": "^18.2.0",
@@ -24,8 +26,8 @@
   "devDependencies": {
     "@next/eslint-plugin-next": "^14.1.0",
     "@stylistic/eslint-plugin-ts": "^1.5.4",
-    "@types/node": "^20.11.6",
-    "@types/react": "^18.2.48",
+    "@types/node": "^20.11.16",
+    "@types/react": "^18.2.51",
     "@types/react-dom": "^18.2.18",
     "autoprefixer": "^10.4.17",
     "eslint": "^8.56.0",

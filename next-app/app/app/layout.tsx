@@ -16,19 +16,19 @@ function Message({ children }: { children: ReactNode }) {
 }
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-	const { data: session } = useSession();
+	const { data } = useSession();
 	const clientData = useClientData();
 	const router = useRouter();
 
 	useEffect(() => {
-		if (session === null) {
+		if (data === null) {
 			router.push("/");
 		}
-	}, [session, router]);
+	}, [data, router]);
 
-	if (session === null) return <Message>Redirecting to login...</Message>;
+	if (data === null) return <Message>Redirecting to login...</Message>;
 
-	if (session === undefined) return <Message>Loading session</Message>;
+	if (data === undefined) return <Message>Loading session</Message>;
 
 	if (clientData.state.data) {
 		return (
