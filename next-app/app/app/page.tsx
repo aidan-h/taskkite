@@ -1,84 +1,90 @@
 "use client";
+import { Formik, FormikErrors } from "formik";
 import { useRouter } from "next/navigation";
+import { useContext, useState } from "react";
+import { nameSchema } from "../_lib/data";
+import { fromZodError } from "zod-validation-error";
+import { createProjectAPI } from "../_lib/api";
+import { stringify } from "querystring";
+import { Project, UserDataContext } from "../_lib/useUserData";
 
-interface Task {
-  title: string;
-  description?: string;
-  id: number;
-  createdAt: Date;
-  due?: Date;
-  labels?: string[];
+function ProjectItem({ project }: { project: Project }) {
+	return <div>
+		<h2>{project.name}</h2>
+		{project.id}
+	</div>
 }
 
-function tomorrow() {
-  const tomorrow = new Date();
-  tomorrow.setTime(tomorrow.getTime() + 24 * 60 * 60 * 1000);
-  return tomorrow;
+function ProjectList() {
+	const [userData,] = useContext(UserDataContext)
+	return <>{userData.projects.map((project) =>
+		<ProjectItem key={project.id} project={project} />)
+	}</>
 }
 
-const defaultTasks: Task[] = [
-  { title: "Take out trash", id: 0, createdAt: new Date() },
-  {
-    title: "Feed dogs",
-    id: 1,
-    description: "Arnold is allergic to chicken",
-    due: new Date(),
-    createdAt: new Date(),
-  },
-  {
-    title: "Make dinner",
-    id: 2,
-    createdAt: new Date(),
-    description: "Fried rice",
-    due: tomorrow(),
-  },
-];
-
-interface Account {
-  tasks: Task[];
+interface FormProps {
+	name: string
 }
 
-function sameDay(a: Date, b: Date): boolean {
-  return (
-    a.getFullYear() == b.getFullYear() &&
-    a.getMonth() == b.getMonth() &&
-    a.getDate() == b.getDate()
-  );
-}
+function CreateProjectForm({ setCreateProject }: {
+	setCreateProject: (value: boolean) => void,
+}) {
+	const [err, setErr] = useState(null as null | string)
+	const [, updateUserData] = useContext(UserDataContext);
 
-function todayTasks(account: Account): Task[] {
-  const today = new Date();
-  return account.tasks.filter((task) => task.due && sameDay(today, task.due));
-}
+	return <Formik initialValues={{ name: '' }}
+		validate={values => {
+			const errors: FormikErrors<FormProps> = {}
+			const results = nameSchema.safeParse(values.name);
+			if (!results.success)
+				errors.name = fromZodError(results.error).toString()
+			return errors
+		}} onSubmit={(values, { setSubmitting }) => {
+			createProjectAPI(values.name).then(() => {
+				updateUserData()
+				setSubmitting(false)
+				setCreateProject(false)
+			}).catch((err) => {
+				setErr(stringify(err))
+				setSubmitting(false)
+			})
 
-function TaskWidget({ task }: { task: Task }) {
-  return (
-    <div className="bg-white rounded-xl max-w-sm m-4 p-3">
-      <h2 className="text-lg">{task.title}</h2>
-      <p className="text-slate-500">{task.description}</p>
-      <p>Created at {task.createdAt.toDateString()}</p>
-      {task.due ? <p>Due at {task.due.toDateString()}</p> : <></>}
-    </div>
-  );
-}
+		}}>
+		{({ values, errors, isSubmitting, handleSubmit, handleChange }) => {
+			return <form onSubmit={handleSubmit}>
+				{err}
+				<button onClick={() => setCreateProject(false)}>Cancel</button>
+				<br />
+				<input name="name" type="text" value={values.name} onChange={handleChange} />
+				<br />
+				{errors.name}
+				{isSubmitting ? <p>Submitting form</p> : undefined}
+				<br />
+				<button type="submit" disabled={isSubmitting}>Create</button>
+			</form>
+		}}
 
-function TaskList({ tasks }: { tasks: Task[] }) {
-  return (
-    <div>
-      {tasks.map((task) => (
-        <TaskWidget key={task.id} task={task}></TaskWidget>
-      ))}
-    </div>
-  );
+
+	</Formik>
+
+}
+function CreateProjectButton() {
+	const [createProject, setCreateProject] = useState(false);
+
+	if (!createProject)
+		return <button onClick={() => setCreateProject(true)}>Create Project</button>
+	return <CreateProjectForm setCreateProject={setCreateProject} />
 }
 
 export default function Home() {
-  const router = useRouter();
+	const router = useRouter();
 
-  return (
-    <>
-      <TaskList tasks={defaultTasks}></TaskList>
-      <button onClick={() => router.push("/app/account")}>Account</button>
-    </>
-  );
+	return (
+		<>
+			<ProjectList></ProjectList>
+			<CreateProjectButton></CreateProjectButton>
+			<br />
+			<button onClick={() => router.push("/app/account")}>Account</button>
+		</>
+	);
 }
