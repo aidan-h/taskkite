@@ -2,36 +2,44 @@
 import { useSession } from "next-auth/react";
 import useClientData, { AppDataContext } from "../_lib/useUserData";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { ReactNode, useEffect } from "react";
+import Descriptor from "../_components/Descriptor";
+import Hero from "../_components/Hero";
+
+function Message({ children }: { children: ReactNode }) {
+  return (
+    <Hero>
+      <Descriptor>{children}</Descriptor>
+    </Hero>
+  );
+}
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-	const { data: session } = useSession();
-	const clientData = useClientData();
-	const router = useRouter();
+  const { data: session } = useSession();
+  const clientData = useClientData();
+  const router = useRouter();
 
-	useEffect(() => {
-		if (session === null) {
-			router.push("/");
-		}
-	}, [session, router])
+  useEffect(() => {
+    if (session === null) {
+      router.push("/");
+    }
+  }, [session, router]);
 
-	if (session === null)
-		return <p>Redirecting to login...</p>;
+  if (session === null) return <Message>Redirecting to login...</Message>;
 
-	if (session === undefined)
-		return <p>Loading session</p>;
+  if (session === undefined) return <Message>Loading session</Message>;
 
-	if (clientData.state.data) {
-		return (
-			<AppDataContext.Provider
-				value={{
-					data: clientData.state.data,
-					update: clientData.fetch
-				}}
-			>
-				{children}
-			</AppDataContext.Provider>
-		);
-	}
-	return <p>Loading user data...</p>;
+  if (clientData.state.data) {
+    return (
+      <AppDataContext.Provider
+        value={{
+          data: clientData.state.data,
+          update: clientData.fetch,
+        }}
+      >
+        {children}
+      </AppDataContext.Provider>
+    );
+  }
+  return <Message>Loading user data...</Message>;
 }
