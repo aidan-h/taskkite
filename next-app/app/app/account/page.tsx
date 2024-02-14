@@ -8,7 +8,6 @@ import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.share
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-// add UpdateUserData TODO
 function Account({
 	appData,
 	router,
