@@ -1,9 +1,9 @@
 import { ReactNode, useState } from "react";
 import SubmitCancel from "./SubmitCancel";
 
-export function ListItem({ children }: { children: ReactNode }) {
+export function ListItem({ onClick, children }: { onClick: () => void, children: ReactNode }) {
 	return (
-		<div className="text-wrap text-center relative text-md p-4 rounded shadow visible bg-slate-100 w-full block mb-4">
+		<div onClick={onClick} className="cursor-pointer text-wrap text-center relative text-md p-4 rounded shadow visible bg-slate-100 w-full block mb-4">
 			{children}
 		</div>
 	);
@@ -25,9 +25,9 @@ export function ListItemButton({
 	);
 }
 
-export function SecondaryListItem({ children }: { children: ReactNode }) {
+export function SecondaryListItem({ children, onClick }: { onClick?: () => void, children: ReactNode }) {
 	return (
-		<div className="text-wrap relative text-center text-md rounded shadow p-4 bg-slate-200 w-full block mb-4">
+		<div onClick={onClick} className="text-wrap cursor-pointer relative text-center text-md rounded shadow p-4 bg-slate-200 w-full block mb-4">
 			{children}
 		</div>
 	);

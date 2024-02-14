@@ -58,38 +58,26 @@ function TaskComponent({ task, openTask }: { task: Task; openTask: () => void })
 
 	if (task.completed)
 		return (
-			<SecondaryListItem>
-				{b}
-				<BottomRightContainer>
-					<ProjectContext.Consumer>
-						{({ editTask }) => (
-							<button
-								className="text-center rounded text-sm shadow bg-slate-50 py-1 px-2"
-								onClick={() => editTask({ id: task.id, completed: false })}
-							>
-								Completed
-							</button>
-						)}
-					</ProjectContext.Consumer>
-				</BottomRightContainer>
-			</SecondaryListItem>
+			<ProjectContext.Consumer>
+				{({ editTask }) => (
+					<SecondaryListItem
+						onClick={() => editTask({ id: task.id, completed: false })}>
+						{b}
+					</SecondaryListItem>
+				)}
+			</ProjectContext.Consumer>
 		);
 
 	return (
-		<ListItem>
+		<ListItem
+			onClick={openTask}>
 			{b}
 			<BottomRightContainer>
-				<button
-					className="text-center rounded text-sm shadow bg-slate-50 py-1 px-2"
-					onClick={openTask}
-				>
-					Edit
-				</button>
 				<ProjectContext.Consumer>
 					{({ editTask }) => (
 						<button
 							className="text-center rounded text-sm shadow bg-slate-50 py-1 px-2"
-							onClick={() => editTask({ id: task.id, completed: true })}
+							onClick={(e) => { e.stopPropagation(); editTask({ id: task.id, completed: true }) }}
 						>
 							Complete
 						</button>
