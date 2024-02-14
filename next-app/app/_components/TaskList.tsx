@@ -10,17 +10,23 @@ import { ProjectContext } from "../_lib/ProjectContext";
 export type DeleteTask = (e: DeleteTaskEvent) => void;
 export type EditTask = (e: EditTaskEvent) => void;
 
-function dateToDueString(dateTime: DateTime): string {
+enum DueState {
+	PAST,
+	SOON,
+	FUTURE,
+}
+
+function dateToDueString(dateTime: DateTime): [string, DueState] {
 	const diffInDays = Math.ceil(dateTime.diff(DateTime.now(), "days").as("days"))
 	if (diffInDays < 0)
-		return "Past due " + (-diffInDays) + " days ago"
+		return [dateTime.monthShort + " " + dateTime.daysInMonth, DueState.PAST]
 	if (diffInDays == 0)
-		return "Today"
+		return ["Today", DueState.SOON]
 	if (diffInDays == 1)
-		return "Tomorrow"
+		return ["Tomorrow", DueState.FUTURE]
 	if (diffInDays <= 7)
-		return "Next " + dateTime.weekdayLong
-	return "In " + diffInDays + " days"
+		return [dateTime.weekdayLong, DueState.FUTURE]
+	return [dateTime.monthShort + " " + dateTime.daysInMonth, DueState.FUTURE]
 }
 
 function getTaskDateTime(task: Task): DateTime | undefined {
@@ -32,17 +38,17 @@ function getTaskDateTime(task: Task): DateTime | undefined {
 	return undefined
 }
 
-function getDueString(task: Task): string | undefined {
-	if (!task.dueDate) return ""
+function getDueString(task: Task): [string, DueState] | undefined {
+	if (!task.dueDate) return undefined
 
-	const first = dateToDueString(DateTime.fromSQL(task.dueDate.toString()));
+	const [first, state] = dateToDueString(DateTime.fromSQL(task.dueDate.toString()));
 
 	if (task.dueTime) {
-		return first + " at " + DateTime.fromSQL(task.dueTime).toLocaleString(DateTime.TIME_SIMPLE);
+		return [first + " at " + DateTime.fromSQL(task.dueTime).toLocaleString(DateTime.TIME_SIMPLE), state];
 	}
 
 
-	return first;
+	return [first, state];
 }
 
 function TaskComponent({ task, openTask }: { task: Task; openTask: () => void }) {
@@ -51,10 +57,7 @@ function TaskComponent({ task, openTask }: { task: Task; openTask: () => void })
 	const b = <div className="ml-4">
 		<h2 className="text-md text-left">{task.name}</h2>
 		<Labels labels={task.labels} onClick={() => { }} />
-		{due ? <p className="text-left">{due}</p> : undefined}
-		<p className="text-slate-500 text-sm text-left mb-2">
-			{task.description}
-		</p>
+		{due ? <p className="text-left">{due[0]}</p> : undefined}
 	</div>
 
 	if (task.completed)

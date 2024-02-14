@@ -11,6 +11,7 @@ export default function RootLayout({
 		<html lang="en">
 			<head>
 				<link rel="icon" href="/icon.png" type="image/png" />
+				<title>Taskkite</title>
 			</head>
 			<body className="bg-slate-50">
 				<main>
