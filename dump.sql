@@ -73,9 +73,11 @@ CREATE TABLE `project` (
   `id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(20) NOT NULL,
   `owner` varchar(50) NOT NULL,
+  `task_count` int NOT NULL,
+  `history_count` int NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -84,7 +86,33 @@ CREATE TABLE `project` (
 
 LOCK TABLES `project` WRITE;
 /*!40000 ALTER TABLE `project` DISABLE KEYS */;
+INSERT INTO `project` VALUES (1,'Project23','aidanhammond2003@gmail.com',0,0);
 /*!40000 ALTER TABLE `project` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `project_history`
+--
+
+DROP TABLE IF EXISTS `project_history`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `project_history` (
+  `project_id` int NOT NULL,
+  `id` int NOT NULL,
+  `event` varchar(50) NOT NULL,
+  `data` json NOT NULL,
+  PRIMARY KEY (`project_id`,`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `project_history`
+--
+
+LOCK TABLES `project_history` WRITE;
+/*!40000 ALTER TABLE `project_history` DISABLE KEYS */;
+/*!40000 ALTER TABLE `project_history` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -96,7 +124,7 @@ DROP TABLE IF EXISTS `task`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `task` (
   `project_id` int NOT NULL,
-  `id` int NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL,
   `name` varchar(50) NOT NULL,
   `description` text,
   `archived` tinyint(1) NOT NULL,
@@ -162,7 +190,7 @@ CREATE TABLE `user` (
 
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES ('aidanhammond2003@gmail.com','Aidan');
+INSERT INTO `user` VALUES ('aidanhammond2003@gmail.com','Aidan Hammond');
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -175,4 +203,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-01-16 12:37:03
+-- Dump completed on 2024-01-23 13:14:56

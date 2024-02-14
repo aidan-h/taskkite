@@ -1,25 +1,40 @@
-import { Task } from "./data";
-import { SharedProject } from "./useUserData";
+"use client";
+import { signOut } from "next-auth/react";
+import { SyncRequest, Task, UserEvent } from "./data";
 
-export async function getData<T, D>(url: string, data: D): Promise<T> {
+async function getData<T, D>(url: string, data: D): Promise<T> {
 	const resp = await fetch(url, { body: JSON.stringify(data), method: "POST" });
 	const text = await resp.text();
 	if (resp.status == 200) return JSON.parse(text) as T;
 	throw text;
 }
 
-export async function getProject(id: number): Promise<SharedProject> {
-	return await getData("/api/project/get", { id: id });
+export async function createProject(name: string) {
+	await getData("/api/project/create", { name: name });
 }
 
-export async function createTask(projectId: number, name: string, description: string) {
-	await getData("/api/project/task/create", { id: projectId, name: name, description: description })
+export function deleteAccount() {
+	fetch("/api/user/delete", { method: "POST" }).catch(console.error);
+	signOut();
 }
 
-export async function getProjectTasks(id: number): Promise<Task[]> {
-	return await getData("/api/project/tasks", { id: id });
+export interface Project {
+	id: number;
+	owner: string;
+	name: string;
+	tasks: Task[];
 }
 
-export async function createProjectAPI(name: string) {
-	await getData("/api/project/create", { name: name })
+export interface AppData {
+	email: string;
+	name: string;
+	projects: Project[];
+}
+
+export async function syncAppData(req: SyncRequest): Promise<UserEvent[]> {
+	return await getData("/api/sync", req);
+}
+
+export async function getAppData(): Promise<AppData> {
+	return await getData("/api/appData", {});
 }

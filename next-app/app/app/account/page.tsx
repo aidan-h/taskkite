@@ -1,18 +1,12 @@
 "use client";
+import { deleteAccount } from "@/app/_lib/api";
 import { nameSchema } from "@/app/_lib/data";
-import { UserData, UserDataContext } from "@/app/_lib/useUserData";
+import { ClientData, UserDataContext } from "@/app/_lib/useUserData";
 import { Formik, FormikErrors } from "formik";
 import { useSession, signOut } from "next-auth/react";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-
-function deleteAccount() {
-  fetch("/api/user/delete", { method: "POST" }).catch((err) =>
-    console.error(err),
-  );
-  signOut();
-}
 
 // add UpdateUserData TODO
 function Account({
@@ -20,7 +14,7 @@ function Account({
   router,
   fetchUserData,
 }: {
-  userData: UserData;
+  userData: ClientData;
   fetchUserData: () => undefined;
   router: AppRouterInstance;
 }) {

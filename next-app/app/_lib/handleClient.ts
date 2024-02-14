@@ -8,7 +8,7 @@ import { Connection } from "mysql2/promise";
 import { NextRequest, NextResponse } from "next/server";
 import { ZodSchema } from "zod";
 
-export function handleUserGet(
+export function handleClientGetReq(
   action: (db: Connection, session: UserSession) => Promise<Response>,
 ) {
   return async (req: NextRequest, res: NextResponse) => {
@@ -27,7 +27,7 @@ export function handleUserGet(
   };
 }
 
-export function handleUserPost<T>(
+export function handleClientPostReq<T>(
   schema: ZodSchema<T>,
   action: (db: Connection, session: UserSession, data: T) => Promise<Response>,
 ) {
