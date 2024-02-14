@@ -81,7 +81,7 @@ async function editTask(
 	]);
 }
 
-const DELETE_TASK_STATEMENT = "DELETE FROM task WHERE project_id = ?, id = ?";
+const DELETE_TASK_STATEMENT = "DELETE FROM task WHERE project_id = ? AND id = ?";
 async function deleteTask(
 	db: Connection,
 	data: DeleteTaskEvent,
@@ -141,19 +141,16 @@ async function handleChanges(
 	projectId: number,
 ) {
 	for (const [event, data] of changes) {
+		await db.beginTransaction()
 		try {
 			const handler = handlers.get(event);
 			if (!handler) throw "invalid event " + event;
 			await handler(db, data, projectId);
 			await addToProjectHistory(db, projectId, event, data);
+			await db.commit()
 		} catch (err) {
-			console.error(
-				"failed to apply change to project",
-				event,
-				data,
-				projectId,
-				err,
-			);
+			await db.rollback()
+			throw err
 		}
 	}
 }

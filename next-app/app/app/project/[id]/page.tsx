@@ -11,7 +11,8 @@ export default function Page({ params }: { params: { id: string } }) {
 			<div>
 				Project {params.id}
 				<TaskList createTask={(e) => projectData.emit(["createTask", e])}
-					tasks={projectData.data.tasks}></TaskList>
+					tasks={projectData.data.tasks}
+					deleteTask={(e) => projectData.emit(["deleteTask", e])}></TaskList>
 			</div>
 		);
 	}
