@@ -17,9 +17,17 @@ const taskIdSchema = z.object({
 	id: idSchema,
 })
 
+export const affectProjectSchema = z.object({
+	projectId: idSchema
+})
+
+export const affectMemberSchema = z.object({
+	memberEmail: z.string(),
+}).merge(affectProjectSchema)
+
 export const editProjectSchema = z.object({
 	name: nameSchema,
-})
+}).merge(affectProjectSchema)
 
 const createTaskSchema = z.object({
 	name: nameSchema,
