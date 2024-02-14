@@ -1,6 +1,8 @@
 "use client";
 import {
+	AddLabelEvent,
 	CreateTaskEvent,
+	DeleteLabelEvent,
 	Task,
 	descriptionSchema,
 	nameSchema,
@@ -70,23 +72,31 @@ function Form({
 					/>
 					{errors.description}
 					<br />
-					<SubmitCancel isSubmitting={isSubmitting} cancel={close} submitText={text} />
+					{isSubmitting ?? <SubmitCancel submit={handleSubmit} cancel={close} submitText={text} />}
 				</form>
 			)}
 		</Formik>
 	);
 }
+export type AddLabel = (e: AddLabelEvent) => void
+export type DeleteLabel = (e: DeleteLabelEvent) => void
 
 export function TaskEditing({
 	editTask,
+	addLabel,
+	deleteLabel,
 	task,
 	close,
 }: {
 	close: () => void;
 	task: Task;
+	addLabel: AddLabel;
+	deleteLabel: DeleteLabel;
 	editTask: EditTask;
 }) {
-	return <Form text="Save" task={task} close={close} onSubmit={editTask} />;
+	return <div>
+		<Form text="Save" task={task} close={close} onSubmit={editTask} />
+	</div>;
 }
 
 export default function TaskCreation({

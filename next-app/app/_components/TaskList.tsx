@@ -23,10 +23,6 @@ function sameDay(a: Date, b: Date): boolean {
 	);
 }
 
-interface Account {
-	tasks: Task[];
-}
-
 export type DeleteTask = (e: DeleteTaskEvent) => void;
 export type EditTask = (e: EditTaskEvent) => void;
 
@@ -46,7 +42,7 @@ function TaskWidget({
 			<h2 className="text-md text-left">{task.name}</h2>
 			<p className="text-slate-500 text-sm text-left mb-2">{task.description}</p>
 			<BottomRightContainer>
-				<button className="text-center rounded text-sm shadow bg-slate-50 py-1 px-2" onClick={() => editTask({ ...task, completed: false })}>
+				<button className="text-center rounded text-sm shadow bg-slate-50 py-1 px-2" onClick={() => editTask({ id: task.id, completed: false })}>
 					Undo
 				</button>
 			</BottomRightContainer>
@@ -58,7 +54,7 @@ function TaskWidget({
 			<p className="text-slate-500 text-sm text-left mb-2">{task.description}</p>
 			<BottomRightContainer>
 				<button className="text-center rounded text-sm shadow bg-slate-50 py-1 px-2" onClick={openTask}>Edit</button>
-				<button className="text-center rounded text-sm shadow bg-slate-50 py-1 px-2" onClick={() => editTask({ ...task, completed: true })}>
+				<button className="text-center rounded text-sm shadow bg-slate-50 py-1 px-2" onClick={() => editTask({ id: task.id, completed: true })}>
 					Complete
 				</button>
 			</BottomRightContainer>

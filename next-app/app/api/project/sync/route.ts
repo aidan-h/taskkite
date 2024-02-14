@@ -1,10 +1,12 @@
 import {
-  CreateTaskEvent,
-  DeleteTaskEvent,
-  EditTaskEvent,
-  SyncRequest,
-  ClientEvent,
-  syncRequestSchema,
+	CreateTaskEvent,
+	DeleteTaskEvent,
+	EditTaskEvent,
+	SyncRequest,
+	ClientEvent,
+	syncRequestSchema,
+	AddLabelEvent,
+	DeleteLabelEvent,
 } from "@/app/_lib/data";
 import { handleClientPostReq } from "@/app/_lib/handleClient";
 import { isOfProject } from "@/app/_lib/isOfProject";
@@ -12,171 +14,193 @@ import { UserSession } from "@/app/_lib/session";
 import { Connection, RowDataPacket } from "mysql2/promise";
 
 const CREATE_TASK_STATEMENT =
-  "INSERT INTO task (project_id, id, name, description, archived, completed) VALUES (?, ?, ?, ?, false, false)";
+	"INSERT INTO task (project_id, id, name, description, archived, completed) VALUES (?, ?, ?, ?, false, false)";
 
 async function getCount(
-  db: Connection,
-  table: string,
-  column: string,
-  keyColumn: string,
-  id: number,
+	db: Connection,
+	table: string,
+	column: string,
+	keyColumn: string,
+	id: number,
 ): Promise<number> {
-  console.log("lock");
-  await db.query("LOCK TABLES " + table + " WRITE");
-  console.log("locked");
-  await db.execute(
-    "UPDATE " +
-      table +
-      " SET " +
-      column +
-      " = " +
-      column +
-      " + 1 WHERE " +
-      keyColumn +
-      " = ?",
-    [id],
-  );
-  console.log("updated");
-  const [rows] = await db.execute<RowDataPacket[]>(
-    "SELECT " + column + " FROM " + table + " WHERE " + keyColumn + " = ?",
-    [id],
-  );
-  console.log("unlocking");
-  await db.query("UNLOCK TABLES");
-  console.log("unlocked");
-  if (rows.length == 0) throw "couldn't find count for " + table + " " + id;
-  return rows[0][column];
+	console.log("lock");
+	await db.query("LOCK TABLES " + table + " WRITE");
+	console.log("locked");
+	await db.execute(
+		"UPDATE " +
+		table +
+		" SET " +
+		column +
+		" = " +
+		column +
+		" + 1 WHERE " +
+		keyColumn +
+		" = ?",
+		[id],
+	);
+	console.log("updated");
+	const [rows] = await db.execute<RowDataPacket[]>(
+		"SELECT " + column + " FROM " + table + " WHERE " + keyColumn + " = ?",
+		[id],
+	);
+	console.log("unlocking");
+	await db.query("UNLOCK TABLES");
+	console.log("unlocked");
+	if (rows.length == 0) throw "couldn't find count for " + table + " " + id;
+	return rows[0][column];
 }
 
 async function getTaskCount(
-  db: Connection,
-  projectId: number,
+	db: Connection,
+	projectId: number,
 ): Promise<number> {
-  return await getCount(db, "project", "task_count", "id", projectId);
+	return await getCount(db, "project", "task_count", "id", projectId);
 }
 
 async function getProjectHistoryCount(
-  db: Connection,
-  projectId: number,
+	db: Connection,
+	projectId: number,
 ): Promise<number> {
-  return await getCount(db, "project", "history_count", "id", projectId);
+	return await getCount(db, "project", "history_count", "id", projectId);
 }
 
 async function createTask(
-  db: Connection,
-  data: CreateTaskEvent,
-  projectId: number,
+	db: Connection,
+	data: CreateTaskEvent,
+	projectId: number,
 ) {
-  const count = await getTaskCount(db, projectId);
-  await db.execute(CREATE_TASK_STATEMENT, [
-    projectId,
-    count,
-    data.name,
-    data.description ? data.description : "",
-  ]);
+	const count = await getTaskCount(db, projectId);
+	await db.execute(CREATE_TASK_STATEMENT, [
+		projectId,
+		count,
+		data.name,
+		data.description ? data.description : "",
+	]);
 }
 
-const EDIT_TASK_STATEMENT =
-  "UPDATE task SET archived = ?, completed = ?, description = ?, name = ? WHERE project_id = ? AND id = ?";
+const ADD_LABEL_STATEMENT = `INSERT INTO label (project_id, id, name) VALUES (?, ?, ?)`
+
+const DELETE_LABEL_STATEMENT = `DELETE FROM label WHERE project_id = ? AND id = ? AND name = ?`
+
+async function deleteLabel(db: Connection, data: DeleteLabelEvent, projectId: number) {
+	await db.execute(DELETE_LABEL_STATEMENT, [projectId, data.id, data.name])
+}
+
+async function addLabel(db: Connection, data: AddLabelEvent, projectId: number) {
+	await db.execute(ADD_LABEL_STATEMENT, [projectId, data.id, data.name])
+}
 
 async function editTask(
-  db: Connection,
-  data: EditTaskEvent,
-  projectId: number,
+	db: Connection,
+	data: EditTaskEvent,
+	projectId: number,
 ) {
-  await db.execute(EDIT_TASK_STATEMENT, [
-    data.archived ? data.archived : false,
-    data.completed ? data.completed : false,
-    data.description ? data.description : "",
-    data.name,
-    projectId,
-    data.id,
-  ]);
+	let statement = "UPDATE task SET ";
+	const fields: (keyof EditTaskEvent)[] = ["name", "completed", "description", "archived"]
+	let expressions = fields.filter((field) => data[field] != undefined)
+	let values = expressions.map((field) => data[field])
+	if (fields.length == 0) return
+	for (let i = 0; i < expressions.length - 1; i++) {
+		const field = fields[i]
+		statement += field + " = ?, ";
+	}
+	const field = fields[fields.length - 1]
+	statement += field + " = ? WHERE project_id = ? AND id = ?"
+	values.push(projectId)
+	values.push(data.id)
+
+	await db.execute(statement, values)
 }
 
 const DELETE_TASK_STATEMENT =
-  "DELETE FROM task WHERE project_id = ? AND id = ?";
+	"DELETE FROM task WHERE project_id = ? AND id = ?";
+
+const DELETE_TASK_LABELS_STATEMENT = "DELETE FROM label WHERE task_id = ?";
+
 async function deleteTask(
-  db: Connection,
-  data: DeleteTaskEvent,
-  projectId: number,
+	db: Connection,
+	data: DeleteTaskEvent,
+	projectId: number,
 ) {
-  await db.execute(DELETE_TASK_STATEMENT, [projectId, data.id]);
+	await db.execute(DELETE_TASK_STATEMENT, [projectId, data.id]);
+	await db.execute(DELETE_TASK_LABELS_STATEMENT, [data.id]);
 }
 
 const handlers = new Map<
-  string,
-  (db: Connection, data: any, projectId: number) => Promise<void>
+	string,
+	(db: Connection, data: any, projectId: number) => Promise<void>
 >([
-  ["createTask", createTask],
-  ["editTask", editTask],
-  ["deleteTask", deleteTask],
+	["createTask", createTask],
+	["editTask", editTask],
+	["deleteTask", deleteTask],
+	["deleteLabel", deleteLabel],
+	["addLabel", addLabel]
 ]);
 
 const ADD_PROJECT_HISTORY_STATEMENT =
-  "INSERT INTO project_history (project_id, id, event, data) VALUES (?, ?, ?, ?)";
+	"INSERT INTO project_history (project_id, id, event, data) VALUES (?, ?, ?, ?)";
 
 async function addToProjectHistory(
-  db: Connection,
-  projectId: number,
-  event: string,
-  data: any,
+	db: Connection,
+	projectId: number,
+	event: string,
+	data: any,
 ) {
-  const count = await getProjectHistoryCount(db, projectId);
-  await db.execute(ADD_PROJECT_HISTORY_STATEMENT, [
-    projectId,
-    count,
-    event,
-    JSON.stringify(data),
-  ]);
+	const count = await getProjectHistoryCount(db, projectId);
+	await db.execute(ADD_PROJECT_HISTORY_STATEMENT, [
+		projectId,
+		count,
+		event,
+		JSON.stringify(data),
+	]);
 }
 
 const GET_PROJECT_HISTORY_STATEMENT =
-  "SELECT id, event, data FROM project_history WHERE id > ? AND project_id = ? ORDER BY id";
+	"SELECT id, event, data FROM project_history WHERE id > ? AND project_id = ? ORDER BY id";
 async function getProjectHistorySince(
-  db: Connection,
-  projectId: number,
-  index: number,
+	db: Connection,
+	projectId: number,
+	index: number,
 ): Promise<ClientEvent[]> {
-  const [rows] = await db.execute<RowDataPacket[]>(
-    GET_PROJECT_HISTORY_STATEMENT,
-    [index, projectId],
-  );
-  const data = rows as { id: number; event: string; data: any }[];
+	const [rows] = await db.execute<RowDataPacket[]>(
+		GET_PROJECT_HISTORY_STATEMENT,
+		[index, projectId],
+	);
+	const data = rows as { id: number; event: string; data: any }[];
 
-  return data.map((d) => {
-    return [d.event, d.data];
-  });
+	return data.map((d) => {
+		return [d.event, d.data];
+	});
 }
 
 async function handleChanges(
-  db: Connection,
-  changes: ClientEvent[],
-  projectId: number,
+	db: Connection,
+	changes: ClientEvent[],
+	projectId: number,
 ) {
-  for (const [event, data] of changes) {
-    await db.beginTransaction();
-    try {
-      const handler = handlers.get(event);
-      if (!handler) throw "invalid event " + event;
-      await handler(db, data, projectId);
-      await addToProjectHistory(db, projectId, event, data);
-      await db.commit();
-    } catch (err) {
-      await db.rollback();
-      throw err;
-    }
-  }
+	for (const [event, data] of changes) {
+		await db.beginTransaction();
+		try {
+			const handler = handlers.get(event);
+			if (!handler) throw "invalid event " + event;
+			await handler(db, data, projectId);
+			await addToProjectHistory(db, projectId, event, data);
+			await db.commit();
+		} catch (err) {
+			await db.rollback();
+			throw err;
+		}
+	}
 }
 
 export const POST = handleClientPostReq<SyncRequest>(
-  syncRequestSchema,
-  async (db: Connection, session: UserSession, req: SyncRequest) => {
-    if (!(await isOfProject(db, session.email, req.projectId)))
-      return new Response("not of project", { status: 400 });
-    if (req.changes) await handleChanges(db, req.changes, req.projectId);
-    return Response.json(
-      await getProjectHistorySince(db, req.projectId, req.index),
-    );
-  },
+	syncRequestSchema,
+	async (db: Connection, session: UserSession, req: SyncRequest) => {
+		if (!(await isOfProject(db, session.email, req.projectId)))
+			return new Response("not of project", { status: 400 });
+		if (req.changes) await handleChanges(db, req.changes, req.projectId);
+		return Response.json(
+			await getProjectHistorySince(db, req.projectId, req.index),
+		);
+	},
 );
