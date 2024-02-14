@@ -1,7 +1,7 @@
 "use client";
 import { CenterContainer } from "@/app/_components/CenterContainer";
 import Title from "@/app/_components/Title";
-import { SecondaryListItemButton, ListItem, ListItemButton } from "@/app/_components/listItems";
+import { ListItem, ListItemButton, DeleteListItem } from "@/app/_components/listItems";
 import { deleteAccount } from "@/app/_lib/api";
 import { AppData, nameSchema } from "@/app/_lib/data";
 import { AppDataContext } from "@/app/_lib/useUserData";
@@ -75,38 +75,11 @@ function Account({
 			</Formik>
 			<ListItemButton onClick={() => signOut()}>Sign Out</ListItemButton>
 			<ListItemButton onClick={() => router.push("/app")}>Back</ListItemButton>
-			<SecondaryListItemButton onClick={() => setDeleteUser(true)}>Delete Account</SecondaryListItemButton>
-			{deleteUser ? (
-				<DeleteUserConfirmation
-					close={() => setDeleteUser(false)}
-					confirm={deleteAccount}
-				></DeleteUserConfirmation>
-			) : undefined}
+			<DeleteListItem action={deleteAccount}
+				text="Delete Account"
+				confirmText="Are you sure you want to delete you account? This cannot be undone!"
+			/>
 		</CenterContainer>
-	);
-}
-
-function DeleteUserConfirmation({
-	close,
-	confirm,
-}: {
-	close: () => void;
-	confirm: () => void;
-}) {
-	return (
-		<div>
-			<h1>Are you sure you want to delete your account?</h1>
-			<button onClick={close}>Cancel</button>
-			<br></br>
-			<button
-				onClick={() => {
-					confirm();
-					close();
-				}}
-			>
-				Delete
-			</button>
-		</div>
 	);
 }
 

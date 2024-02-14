@@ -74,14 +74,13 @@ function CreateProjectForm({
 					<form className="p-4 bg-slate-100 rounded shadow-lg w-full, relative" onSubmit={handleSubmit}>
 						{err}
 						<input
-							className="bg-slate-300 px-2 w-full rounded py-2"
+							className="bg-slate-300 px-2 w-full mb-6 rounded py-2"
 							name="name"
 							type="text"
 							value={values.name}
 							onChange={handleChange}
 						/>
-						<br />
-						<SubmitCancel isSubmitting={isSubmitting} cancel={() => setCreateProject(false)} submitText="Create" />
+						<SubmitCancel submit={handleSubmit} cancel={() => setCreateProject(false)} submitText="Create" />
 						<p className="mt-2 text-slate-700">
 							{isSubmitting ? <p>Submitting form</p> : undefined}
 							{errors.name}

@@ -2,7 +2,7 @@
 import AccountButton from "@/app/_components/AccountButton";
 import { CenterContainer } from "@/app/_components/CenterContainer";
 import Title from "@/app/_components/Title";
-import { ListItem, ListItemButton } from "@/app/_components/listItems";
+import { DeleteListItem, ListItem, ListItemButton } from "@/app/_components/listItems";
 import { ProjectContext } from "@/app/_lib/ProjectContext";
 import { deleteProject } from "@/app/_lib/api";
 import { AppDataContext } from "@/app/_lib/useUserData";
@@ -18,15 +18,13 @@ function BackComponent({ id }: { id: number }) {
 
 function DeleteProject({ id }: { id: number }) {
 	const router = useRouter();
-	const [deleting, setDeleting] = useState(false);
-	if (deleting) {
-		return <ListItem>Deleting project</ListItem>;
-	}
-	return (
-		<AppDataContext.Consumer>
+	const [deleting, setDeleting] = useState(false)
+	if (!deleting)
+		return <AppDataContext.Consumer>
 			{(appData) => (
-				<ListItemButton
-					onClick={() => {
+				<DeleteListItem text="Delete Project" confirmText="Are you sure you want to delete this project? It can't be undone!"
+					action={() => {
+
 						setDeleting(true);
 						deleteProject(id)
 							.then(() => {
@@ -34,13 +32,9 @@ function DeleteProject({ id }: { id: number }) {
 								router.push("/app");
 							})
 							.catch(() => setDeleting(false));
-					}}
-				>
-					Delete Project
-				</ListItemButton>
-			)}
+					}} />)}
 		</AppDataContext.Consumer>
-	);
+	return <ListItem>Deleting project...</ListItem>
 }
 
 export default function Page() {

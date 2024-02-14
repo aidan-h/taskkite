@@ -1,4 +1,5 @@
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
+import SubmitCancel from "./SubmitCancel";
 
 export function ListItem({ children }: { children: ReactNode }) {
 	return <div
@@ -24,5 +25,15 @@ export function SecondaryListItemButton({ children, onClick }: { children: React
 		>
 			{children}
 		</button>)
+}
+
+export function DeleteListItem({ action, text, confirmText }: { confirmText: string; text: string; action: () => void }) {
+	const [del, setDel] = useState(false);
+	if (!del)
+		return <SecondaryListItemButton onClick={() => setDel(true)}>{text}</SecondaryListItemButton>
+	return <ListItem>
+		<p className="text-left mb-6">{confirmText}</p>
+		<SubmitCancel submitText="Delete" submit={action} cancel={() => setDel(false)} />
+	</ListItem>
 }
 
