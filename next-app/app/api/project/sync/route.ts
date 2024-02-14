@@ -17,8 +17,6 @@ import { Connection, RowDataPacket } from "mysql2/promise";
 import { ServerEventHandlers } from "@/app/_lib/sync";
 import getCount from "@/app/_server/getCount";
 
-const CREATE_TASK_STATEMENT =
-	"INSERT INTO task (project_id, id, name, description, archived, completed, due_date, due_time) VALUES (?, ?, ?, ?, false, false, ?, ?)";
 
 async function getTaskCount(
 	db: Connection,
@@ -49,6 +47,8 @@ async function setLabels(db: Connection, projectId: number, taskId: number, labe
 }
 
 const ADD_LABEL_STATEMENT = `INSERT INTO label (project_id, task_id, name) VALUES (?, ?, ?)`;
+const CREATE_TASK_STATEMENT =
+	"INSERT INTO task (project_id, id, name, description, archived, completed, due_date, due_time) VALUES (?, ?, ?, ?, false, false, ?, ?)";
 async function createTask(
 	db: Connection,
 	data: CreateTaskEvent,
@@ -188,6 +188,7 @@ async function handleChanges(
 	for (const [event, data] of changes) {
 		await db.beginTransaction();
 		try {
+			console.log("processing event " + event, data);
 			const handler = handlers[event];
 			if (!handler) throw "invalid event " + event;
 			await handler(db, data as any);

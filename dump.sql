@@ -94,8 +94,7 @@ CREATE TABLE `task` (
   `completed` tinyint(1) NOT NULL,
   `due_date` date DEFAULT NULL,
   `due_time` time DEFAULT NULL,
-  PRIMARY KEY (`project_id`,`id`),
-  UNIQUE KEY `id` (`id`)
+  UNIQUE KEY `project_id` (`project_id`,`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -141,4 +140,4 @@ CREATE TABLE `user` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-02-09 10:17:18
+-- Dump completed on 2024-02-12  9:22:06
