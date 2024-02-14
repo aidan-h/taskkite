@@ -66,7 +66,7 @@ function TaskComponent({ task, openTask }: { task: Task; openTask: () => void })
 								className="text-center rounded text-sm shadow bg-slate-50 py-1 px-2"
 								onClick={() => editTask({ id: task.id, completed: false })}
 							>
-								Undo
+								Completed
 							</button>
 						)}
 					</ProjectContext.Consumer>
@@ -100,6 +100,10 @@ function TaskComponent({ task, openTask }: { task: Task; openTask: () => void })
 }
 
 function sortTasks(a: Task, b: Task): number {
+	if (a.completed && !b.completed)
+		return 1
+	if (b.completed && !a.completed)
+		return -1
 	const aT = getTaskDateTime(a)
 	const bT = getTaskDateTime(b)
 	if (aT == undefined)
@@ -113,35 +117,43 @@ function sortTasks(a: Task, b: Task): number {
 	return 1
 
 }
-export function TaskList() {
+
+function List({ tasks }: { tasks: Task[] }) {
 	const [taskEditing, setTaskEditing] = useState(
 		undefined as undefined | number,
 	);
+	return tasks.sort(sortTasks)
+		.map((task) => {
+			if (task.id == taskEditing)
+				return (
+					<TaskEditing
+						close={() => setTaskEditing(undefined)}
+						key={task.id}
+						task={task}
+					></TaskEditing>
+				);
+			return (
+				<TaskComponent
+					openTask={() => setTaskEditing(task.id)}
+					key={task.id}
+					task={task}
+				></TaskComponent>
+			);
+		})
+}
+
+export function TaskList() {
+	const [showCompleted, setShowCompleted] = useState(false)
+
 	return (
 		<ProjectContext.Consumer>
 			{({ project }) => (
 				<div>
-					{project.tasks
-						.filter((task) => !task.archived)
-						.sort(sortTasks)
-						.map((task) => {
-							if (task.id == taskEditing)
-								return (
-									<TaskEditing
-										close={() => setTaskEditing(undefined)}
-										key={task.id}
-										task={task}
-									></TaskEditing>
-								);
-							return (
-								<TaskComponent
-									openTask={() => setTaskEditing(task.id)}
-									key={task.id}
-									task={task}
-								></TaskComponent>
-							);
-						})}
+					<List tasks={project.tasks.filter((task) => !task.archived && !task.completed)} />
 					<TaskCreation />
+					<button className="block mx-auto shadow rounded bg-slate-200 mb-4 px-4"
+						onClick={() => setShowCompleted(!showCompleted)}>{showCompleted ? "Hide completed tasks" : "Show completed tasks"}</button>
+					{showCompleted ? <List tasks={project.tasks.filter((task) => !task.archived && task.completed)} /> : undefined}
 				</div>
 			)}
 		</ProjectContext.Consumer>
