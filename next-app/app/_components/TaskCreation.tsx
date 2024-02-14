@@ -8,7 +8,7 @@ import {
 } from "@/app/_lib/data";
 import { validateInputValue } from "@/app/_lib/formikHelpers";
 import { Formik, FormikErrors } from "formik";
-import { ReactNode, useState } from "react";
+import { ReactNode, useContext, useState } from "react";
 import { SecondaryListItemButton } from "./listItems";
 import SubmitCancel from "./SubmitCancel";
 import { ProjectContext } from "../_lib/ProjectContext";
@@ -99,8 +99,9 @@ function Form({
 export type AddLabel = (e: AddLabelEvent) => void;
 export type DeleteLabel = (e: DeleteLabelEvent) => void;
 
-export function AddLabelForm({ task, cancel }: { task: Task; cancel: () => void }) {
-	return <ProjectContext.Consumer>{({ addLabel }) => (<Formik initialValues={{ name: "" }} validate={(values) => {
+export function AddLabelForm({ task }: { task: Task }) {
+	const { addLabel } = useContext(ProjectContext);
+	return <Formik initialValues={{ name: "" }} validate={(values) => {
 		let errors: FormikErrors<{ name: string }> = {}
 		validateInputValue(nameSchema, values.name, errors, "name");
 		return errors
@@ -118,7 +119,7 @@ export function AddLabelForm({ task, cancel }: { task: Task; cancel: () => void 
 				{isValid ? <SecondaryButton onClick={submitForm}>Add</SecondaryButton> : undefined}
 			</form>
 		)}
-	</Formik>)}</ProjectContext.Consumer>
+	</Formik>
 }
 
 export function Labels({ labels, children, onClick }: { children?: ReactNode, labels?: string[], onClick: (name: string) => void }) {
@@ -142,50 +143,44 @@ export function TaskEditing({
 	task: Task;
 }) {
 	const [addingLabel, setAddingLabel] = useState(false);
+	const { editTask, deleteLabel } = useContext(ProjectContext);
 	return (
 		<div>
-			<ProjectContext.Consumer>
-				{({ editTask, deleteLabel }) => (
-					<div>
-						<Form text="Save" task={task} close={close} onSubmit={editTask}>
-							<Labels labels={task.labels} onClick={(label) => deleteLabel({ id: task.id, name: label })}>
-								{addingLabel ? <AddLabelForm task={task} cancel={() => setAddingLabel(false)} /> : <SecondaryButton onClick={() => setAddingLabel(true)}>+</SecondaryButton>}
-							</Labels>
-						</Form>
-					</div>
-				)}
-			</ProjectContext.Consumer>
+			<div>
+				<Form text="Save" task={task} close={close} onSubmit={editTask}>
+					<Labels labels={task.labels} onClick={(label) => deleteLabel({ id: task.id, name: label })}>
+						{addingLabel ? <AddLabelForm task={task} /> : <SecondaryButton onClick={() => setAddingLabel(true)}>+</SecondaryButton>}
+					</Labels>
+				</Form>
+			</div>
 		</div>
 	);
 }
 
 export default function TaskCreation() {
 	const [active, setActive] = useState(false);
+	const { createTask } = useContext(ProjectContext)
 	if (active)
 		return (
-			<ProjectContext.Consumer>
-				{({ createTask }) => (
-					<Form
-						text="Create"
-						task={{
-							name: "New Task",
-							id: -1,
-							archived: false,
-							completed: false,
-						}}
-						close={() => setActive(false)}
-						onSubmit={(task) =>
-							createTask({
-								name: task.name,
-								description: task.description,
-								labels: task.labels,
-								dueTime: task.dueTime,
-								dueDate: task.dueDate,
-							})
-						}
-					/>
-				)}
-			</ProjectContext.Consumer>
+			<Form
+				text="Create"
+				task={{
+					name: "New Task",
+					id: -1,
+					archived: false,
+					completed: false,
+				}}
+				close={() => setActive(false)}
+				onSubmit={(task) =>
+					createTask({
+						name: task.name,
+						description: task.description,
+						labels: task.labels,
+						dueTime: task.dueTime,
+						dueDate: task.dueDate,
+					})
+				}
+			/>
 		);
 	return (
 		<SecondaryListItemButton onClick={() => setActive(true)}>

@@ -13,6 +13,7 @@ import { Formik, FormikErrors } from "formik";
 import { useSession, signOut } from "next-auth/react";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { useRouter } from "next/navigation";
+import { useContext } from "react";
 
 function Account({
 	appData,
@@ -83,6 +84,7 @@ function Account({
 export default function AccountPage() {
 	const { data: session } = useSession();
 	const router = useRouter();
+	const appData = useContext(AppDataContext)
 	if (session === null) {
 		router.push("/");
 	} else if (session === undefined) {
@@ -90,14 +92,10 @@ export default function AccountPage() {
 	}
 
 	return (
-		<AppDataContext.Consumer>
-			{(appData) => (
-				<Account
-					appData={appData.data}
-					fetchUserData={appData.update}
-					router={router}
-				></Account>
-			)}
-		</AppDataContext.Consumer>
+		<Account
+			appData={appData.data}
+			fetchUserData={appData.update}
+			router={router}
+		></Account>
 	);
 }

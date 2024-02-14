@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { DateTime } from "luxon";
 import { DeleteTaskEvent, EditTaskEvent, Task } from "../_lib/data";
 import TaskCreation, { Labels, TaskEditing } from "./TaskCreation";
@@ -46,6 +46,7 @@ function getDueString(task: Task): string | undefined {
 }
 
 function TaskComponent({ task, openTask }: { task: Task; openTask: () => void }) {
+	const { editTask } = useContext(ProjectContext)
 	const due = getDueString(task)
 	const b = <>
 		<h2 className="text-md text-left">{task.name}</h2>
@@ -58,14 +59,10 @@ function TaskComponent({ task, openTask }: { task: Task; openTask: () => void })
 
 	if (task.completed)
 		return (
-			<ProjectContext.Consumer>
-				{({ editTask }) => (
-					<SecondaryListItem
-						onClick={() => editTask({ id: task.id, completed: false })}>
-						{b}
-					</SecondaryListItem>
-				)}
-			</ProjectContext.Consumer>
+			<SecondaryListItem
+				onClick={() => editTask({ id: task.id, completed: false })}>
+				{b}
+			</SecondaryListItem>
 		);
 
 	return (
@@ -73,16 +70,12 @@ function TaskComponent({ task, openTask }: { task: Task; openTask: () => void })
 			onClick={openTask}>
 			{b}
 			<BottomRightContainer>
-				<ProjectContext.Consumer>
-					{({ editTask }) => (
-						<button
-							className="text-center rounded text-sm shadow bg-slate-50 py-1 px-2"
-							onClick={(e) => { e.stopPropagation(); editTask({ id: task.id, completed: true }) }}
-						>
-							Complete
-						</button>
-					)}
-				</ProjectContext.Consumer>
+				<button
+					className="text-center rounded text-sm shadow bg-slate-50 py-1 px-2"
+					onClick={(e) => { e.stopPropagation(); editTask({ id: task.id, completed: true }) }}
+				>
+					Complete
+				</button>
 			</BottomRightContainer>
 		</ListItem>
 	);
@@ -133,18 +126,15 @@ function List({ tasks }: { tasks: Task[] }) {
 
 export function TaskList() {
 	const [showCompleted, setShowCompleted] = useState(false)
+	const { project } = useContext(ProjectContext)
 
 	return (
-		<ProjectContext.Consumer>
-			{({ project }) => (
-				<div>
-					<List tasks={project.tasks.filter((task) => !task.archived && !task.completed)} />
-					<TaskCreation />
-					<button className="block mx-auto shadow rounded bg-slate-200 mb-4 px-4"
-						onClick={() => setShowCompleted(!showCompleted)}>{showCompleted ? "Hide completed tasks" : "Show completed tasks"}</button>
-					{showCompleted ? <List tasks={project.tasks.filter((task) => !task.archived && task.completed)} /> : undefined}
-				</div>
-			)}
-		</ProjectContext.Consumer>
+		<div>
+			<List tasks={project.tasks.filter((task) => !task.archived && !task.completed)} />
+			<TaskCreation />
+			<button className="block mx-auto shadow rounded bg-slate-200 mb-4 px-4"
+				onClick={() => setShowCompleted(!showCompleted)}>{showCompleted ? "Hide completed tasks" : "Show completed tasks"}</button>
+			{showCompleted ? <List tasks={project.tasks.filter((task) => !task.archived && task.completed)} /> : undefined}
+		</div>
 	);
 }
