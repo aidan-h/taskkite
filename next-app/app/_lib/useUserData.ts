@@ -9,7 +9,7 @@ import {
 	Project,
 } from "./data";
 import {
-	IncrementalData,
+	IncrementalData as IncrementalSync,
 	SyncClient,
 	SyncStatus,
 	useIncrementalData,
@@ -41,6 +41,8 @@ function applyEvent(project: Project, [name, data]: ClientEvent): Project {
 			tasks: [
 				...project.tasks,
 				{
+					completed: false,
+					archived: false,
 					name: event.name,
 					description: event.description,
 					labels: event.labels,
@@ -86,9 +88,11 @@ function applyEvent(project: Project, [name, data]: ClientEvent): Project {
 	return project;
 }
 
-export function useProjectData(
+export type ProjectSync = IncrementalSync<Project, ClientEvent>
+
+export function useProjectSync(
 	id: number,
-): IncrementalData<Project, ClientEvent> {
+): ProjectSync {
 	return useIncrementalData(
 		() => getProject({ projectId: id }),
 		(events, data) =>

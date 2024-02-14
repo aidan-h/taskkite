@@ -73,11 +73,11 @@ CREATE TABLE `project` (
   `id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(20) NOT NULL,
   `owner` varchar(50) NOT NULL,
-  `task_count` int NOT NULL,
-  `history_count` int NOT NULL,
+  `task_count` int NOT NULL DEFAULT '0',
+  `history_count` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -86,7 +86,6 @@ CREATE TABLE `project` (
 
 LOCK TABLES `project` WRITE;
 /*!40000 ALTER TABLE `project` DISABLE KEYS */;
-INSERT INTO `project` VALUES (1,'Project23','aidanhammond2003@gmail.com',0,0);
 /*!40000 ALTER TABLE `project` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -112,6 +111,7 @@ CREATE TABLE `project_history` (
 
 LOCK TABLES `project_history` WRITE;
 /*!40000 ALTER TABLE `project_history` DISABLE KEYS */;
+INSERT INTO `project_history` VALUES (1,1,'createTask','{\"name\": \"Task name\", \"description\": \"\"}'),(1,2,'createTask','{\"name\": \"Task namess\", \"description\": \"\"}'),(1,3,'createTask','{\"name\": \"Task names\", \"description\": \"\"}'),(1,4,'createTask','{\"name\": \"Task names\", \"description\": \"\"}'),(1,5,'createTask','{\"name\": \"Task namex\", \"description\": \"\"}'),(1,6,'createTask','{\"name\": \"Task nameds\", \"description\": \"\"}'),(1,7,'deleteTask','{\"id\": 5}'),(1,8,'deleteTask','{\"id\": 4}'),(1,9,'deleteTask','{\"id\": 3}'),(1,10,'deleteTask','{\"id\": 2}'),(1,11,'deleteTask','{\"id\": 1}'),(1,12,'deleteTask','{\"id\": 6}'),(1,13,'createTask','{\"name\": \"New Task\"}'),(1,14,'editTask','{\"id\": 7, \"name\": \"New Taskds\", \"archived\": false, \"completed\": false, \"description\": \"\"}'),(1,15,'editTask','{\"id\": 7, \"name\": \"New Taskds\", \"archived\": true, \"completed\": false, \"description\": \"\"}'),(2,1,'createTask','{\"name\": \"New Taskds\"}');
 /*!40000 ALTER TABLE `project_history` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -140,6 +140,7 @@ CREATE TABLE `task` (
 
 LOCK TABLES `task` WRITE;
 /*!40000 ALTER TABLE `task` DISABLE KEYS */;
+INSERT INTO `task` VALUES (1,7,'New Taskds','',1,0),(2,1,'New Taskds','',0,0);
 /*!40000 ALTER TABLE `task` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -203,4 +204,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-01-23 13:14:56
+-- Dump completed on 2024-01-24  9:24:26

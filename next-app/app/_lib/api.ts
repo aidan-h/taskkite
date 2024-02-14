@@ -19,6 +19,11 @@ export async function createProject(name: string) {
 	await getData("/api/project/create", { name: name });
 }
 
+export async function deleteProject(id: number) {
+	await getData("/api/project/delete", { projectId: id });
+}
+
+
 export function deleteAccount() {
 	getData("/api/deleteAccount", {}).catch(console.error);
 	signOut();

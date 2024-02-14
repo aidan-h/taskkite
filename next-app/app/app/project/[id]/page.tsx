@@ -1,22 +1,24 @@
 "use client";
 import { TaskList } from "@/app/_components/TaskList";
-import { useProjectData } from "@/app/_lib/useUserData";
+import { ProjectContext } from "@/app/_lib/ProjectContext";
+import { useRouter } from "next/navigation";
 
-export default function Page({ params }: { params: { id: string } }) {
-	const projectId = parseInt(params.id);
-	const projectData = useProjectData(projectId)
+function Settings({ id }: { id: number; }) {
+	const router = useRouter()
+	return <button onClick={() => router.push("/app/project/" + id + "/settings")}>Settings</button>
+}
 
-	if (projectData.data) {
-		return (
+export default function Page() {
+	return <ProjectContext.Consumer>
+		{({ project, sync }) =>
 			<div>
-				Project {params.id}
-				<TaskList createTask={(e) => projectData.emit(["createTask", e])}
-					tasks={projectData.data.tasks}
-					editTask={(e) => projectData.emit(["editTask", e])}
-					deleteTask={(e) => projectData.emit(["deleteTask", e])}></TaskList>
+				Project {project.name}
+				<TaskList createTask={(e) => sync.emit(["createTask", e])}
+					tasks={project.tasks}
+					editTask={(e) => sync.emit(["editTask", e])}
+					deleteTask={(e) => sync.emit(["deleteTask", e])}></TaskList>
+				<Settings id={project.id}></Settings>
 			</div>
-		);
-	}
-
-	return <div>Loading project</div>;
+		}
+	</ProjectContext.Consumer>
 }
