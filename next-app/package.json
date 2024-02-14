@@ -10,7 +10,6 @@
     "format": "npx prettier ./app --write"
   },
   "dependencies": {
-    "@types/mysql": "^2.15.25",
     "formik": "^2.4.5",
     "mysql2": "^3.7.0",
     "next": "14.0.4",
