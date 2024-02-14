@@ -30,6 +30,8 @@ function TaskWidget({ task, deleteTask, editTask, openTask }: { openTask: () => 
 			<p className="text-slate-500">{task.description}</p>
 			<button onClick={openTask}>Edit</button>
 			< br />
+			<button onClick={() => editTask({ ...task, completed: !task.completed })}>{task.completed ? "Done" : "Complete"}</button>
+			< br />
 			<button onClick={() => editTask({ ...task, archived: true })}>Archive</button>
 			< br />
 			<button onClick={() => deleteTask({ id: task.id })}>Delete</button>
