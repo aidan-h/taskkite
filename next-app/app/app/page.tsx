@@ -52,10 +52,11 @@ function TaskList({ tasks }: { tasks: Task[] }) {
 
 export default function Home() {
 	const router = useRouter()
+
 	return (
 		<>
 			<TaskList tasks={defaultTasks}></TaskList>
-			<button onClick={() => router.push("/account")}>Account</button>
+			<button onClick={() => router.push("/app/account")}>Account</button>
 		</>
 	)
 }
