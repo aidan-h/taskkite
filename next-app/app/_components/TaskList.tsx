@@ -1,8 +1,8 @@
 "use client";
 import { useContext, useState } from "react";
 import { DateTime } from "luxon";
-import { DeleteTaskEvent, EditTaskEvent, Task } from "../_lib/data";
-import TaskCreation, { Labels, TaskEditing } from "./TaskCreation";
+import { DeleteTaskEvent, EditTaskEvent, Project, Task } from "../_lib/data";
+import { Labels, TaskEditing } from "./TaskCreation";
 import { ListItem, SecondaryListItem } from "./listItems";
 import BottomRightContainer from "./BottomRightContainer";
 import { ProjectContext } from "../_lib/ProjectContext";
@@ -100,7 +100,7 @@ function sortTasks(a: Task, b: Task): number {
 
 }
 
-function List({ tasks }: { tasks: Task[] }) {
+export function TaskList({ tasks }: { tasks: Task[] }) {
 	const [taskEditing, setTaskEditing] = useState(
 		undefined as undefined | number,
 	);
@@ -124,17 +124,9 @@ function List({ tasks }: { tasks: Task[] }) {
 		})
 }
 
-export function TaskList() {
-	const [showCompleted, setShowCompleted] = useState(false)
-	const { project } = useContext(ProjectContext)
+export function ActiveTaskList({ project }: { project: Project }) {
 
 	return (
-		<div>
-			<List tasks={project.tasks.filter((task) => !task.archived && !task.completed)} />
-			<TaskCreation />
-			<button className="block mx-auto shadow rounded bg-slate-200 mb-4 px-4"
-				onClick={() => setShowCompleted(!showCompleted)}>{showCompleted ? "Hide completed tasks" : "Show completed tasks"}</button>
-			{showCompleted ? <List tasks={project.tasks.filter((task) => !task.archived && task.completed)} /> : undefined}
-		</div>
+		<TaskList tasks={project.tasks.filter((task) => !task.archived && !task.completed)} />
 	);
 }

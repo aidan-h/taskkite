@@ -13,6 +13,8 @@ import {
 	ListItemButton,
 } from "../_components/listItems";
 import SubmitCancel from "../_components/SubmitCancel";
+import { ProjectSync } from "../_lib/projectSync";
+import { ActiveTaskList } from "../_components/TaskList";
 
 function ProjectItem({ project }: { project: ProjectIdentifier }) {
 	const router = useRouter();
@@ -111,10 +113,24 @@ function CreateProjectButton() {
 	return <CreateProjectForm setCreateProject={setCreateProject} />;
 }
 
+function ProjectDueToday({ project }: { project: ProjectSync }) {
+	if (!project.data)
+		return <div>Loading</div>
+	return <div>
+		<h1>{project.data.name}</h1>
+		<ActiveTaskList project={project.data} />
+	</div>
+}
+
+function DueToday() {
+	const { projects } = useContext(AppDataContext)
+	return projects.map((project) => <ProjectDueToday key={project.id} project={project} />)
+
+}
 export default function Home() {
 	return (
 		<CenterContainer>
-			<ProjectList />
+			<DueToday />
 			<CreateProjectButton />
 		</CenterContainer>
 	);
