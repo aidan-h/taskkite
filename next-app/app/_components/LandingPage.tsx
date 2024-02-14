@@ -1,8 +1,9 @@
 "use client";
+import Image from "next/image";
 import { BuiltInProviderType } from "next-auth/providers/index";
 import { LiteralUnion, signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import Hero from "./Hero";
 import Descriptor from "./Descriptor";
 import PrivacyPolicy from "./PrivacyPolicy";
@@ -43,6 +44,44 @@ function Providers({
 	));
 }
 
+function Features() {
+	const features = [
+		"✔ Synchronization Across Sessions",
+		"✔ Available Offline",
+		"✔ Projects",
+		"✔ Due Dates and Times",
+		"✔ Task Labels",
+		"🚧 Shared Projects",
+		"🚧 File and Image Attachments",
+		"🚧 Desktop and Android App",
+		"🚧 Repeating Tasks",
+		"🚧 Sub-Tasks",
+	];
+
+	return <div className="w-60 mx-auto mt-5">
+		<ul className="text-center text-3xl font-bold">Features</ul>
+		{features.map((feature, i) => <li className="text-left text-sm font-semibold" key={i}>{feature}</li>)}</div>
+}
+
+function N({ children }: { children: ReactNode }) {
+	return <div className="w-60 sm:w-72 mx-auto text-center mt-24">
+		<Image
+			src="/logo.png"
+			className="dark:invert mx-auto mb-8"
+			width={120}
+			height={120}
+			alt="Taskkite logo"
+		/>
+		<h1 className="text-6xl mb-5 font-serif w-full text-center">Taskkite</h1>
+		<h1 className="text-xl mb-4 font-thin">Organize your life, work, and home for good.</h1>
+		<a target="_blank" href="https://codeberg.org/aidanhammond/taskkite" className="text-md font-serif font-light">Taskkite is open source and completely free!</a>
+		<div className="mb-8" />
+		{children}
+		<PrivacyPolicy />
+		<Features />
+	</div>
+}
+
 export default function ClientLandingPage({
 	providers,
 }: {
@@ -65,29 +104,25 @@ export default function ClientLandingPage({
 		return (
 			<Hero>
 				<Descriptor>Logging you in...</Descriptor>
-				<PrivacyPolicy />
 			</Hero>
 		);
 	if (state == LoginState.Failed)
 		return (
-			<Hero>
+			<N>
 				<Descriptor>Failed to login, please try again.</Descriptor>
 				<Providers providers={providers} setState={setState} />
-				<PrivacyPolicy />
-			</Hero>
+			</N>
 		);
 	if (state == LoginState.Succeeded)
 		return (
-			<Hero>
+			<N>
 				<Descriptor>Redirecting you to your projects!</Descriptor>
-				<PrivacyPolicy />
-			</Hero>
+			</N>
 		);
 
 	return (
-		<Hero>
+		<N>
 			<Providers providers={providers} setState={setState} />
-			<PrivacyPolicy />
-		</Hero>
+		</N>
 	);
 }
