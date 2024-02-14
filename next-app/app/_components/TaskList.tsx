@@ -6,7 +6,7 @@ import {
 	Task,
 } from "../_lib/data";
 import TaskCreation, { TaskEditing } from "./TaskCreation";
-import { ListItem } from "./listItems";
+import { ListItem, SecondaryListItem } from "./listItems";
 import BottomRightContainer from "./BottomRightContainer";
 
 function tomorrow() {
@@ -41,14 +41,25 @@ function TaskWidget({
 	deleteTask: DeleteTask;
 	editTask: EditTask;
 }) {
+	if (task.completed)
+		return <SecondaryListItem>
+			<h2 className="text-md text-left">{task.name}</h2>
+			<p className="text-slate-500 text-sm text-left mb-2">{task.description}</p>
+			<BottomRightContainer>
+				<button className="text-center rounded text-sm shadow bg-slate-50 py-1 px-2" onClick={() => editTask({ ...task, completed: false })}>
+					Undo
+				</button>
+			</BottomRightContainer>
+		</SecondaryListItem>
+
 	return (
 		<ListItem>
 			<h2 className="text-md text-left">{task.name}</h2>
 			<p className="text-slate-500 text-sm text-left mb-2">{task.description}</p>
 			<BottomRightContainer>
 				<button className="text-center rounded text-sm shadow bg-slate-50 py-1 px-2" onClick={openTask}>Edit</button>
-				<button className="text-center rounded text-sm shadow bg-slate-50 py-1 px-2" onClick={() => editTask({ ...task, completed: !task.completed })}>
-					{task.completed ? "Done!" : "Complete"}
+				<button className="text-center rounded text-sm shadow bg-slate-50 py-1 px-2" onClick={() => editTask({ ...task, completed: true })}>
+					Complete
 				</button>
 			</BottomRightContainer>
 		</ListItem>
