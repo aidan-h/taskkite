@@ -11,7 +11,7 @@ import { Formik, FormikErrors } from "formik";
 import { ReactNode, useContext, useState } from "react";
 import { SecondaryListItemButton } from "./listItems";
 import SubmitCancel from "./SubmitCancel";
-import { ProjectContext } from "../_lib/ProjectContext";
+import { ProjectContext, ProjectInterface } from "../_lib/ProjectContext";
 import SecondaryButton from "./SecondaryButton";
 
 function nullEmptyString(input?: string): string | undefined {

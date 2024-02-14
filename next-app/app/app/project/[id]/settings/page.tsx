@@ -6,7 +6,7 @@ import {
 	ListItem,
 	ListItemButton,
 } from "@/app/_components/listItems";
-import { ProjectContext } from "@/app/_lib/ProjectContext";
+import { ProjectContext, ProjectInterface } from "@/app/_lib/ProjectContext";
 import { deleteProject } from "@/app/_lib/api";
 import { AppDataContext } from "@/app/_lib/useUserData";
 import { useRouter } from "next/navigation";

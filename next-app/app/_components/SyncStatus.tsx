@@ -1,8 +1,8 @@
 "use client";
 import { useContext } from "react";
-import { ProjectContext } from "../_lib/ProjectContext";
 import { SyncStatus as Status, syncStatusText } from "../_lib/sync";
 import SecondaryButton from "./SecondaryButton";
+import { ProjectContext } from "../_lib/ProjectContext";
 
 export default function SyncStatus() {
 	const { sync, status } = useContext(ProjectContext);

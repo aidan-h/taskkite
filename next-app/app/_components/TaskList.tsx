@@ -1,10 +1,10 @@
 "use client";
 import { useContext, useState } from "react";
+import Image from "next/image"
 import { DateTime } from "luxon";
 import { DeleteTaskEvent, EditTaskEvent, Project, Task } from "../_lib/data";
 import { Labels, TaskEditing } from "./TaskCreation";
 import { ListItem, SecondaryListItem } from "./listItems";
-import BottomRightContainer from "./BottomRightContainer";
 import { ProjectContext } from "../_lib/ProjectContext";
 
 export type DeleteTask = (e: DeleteTaskEvent) => void;
@@ -48,14 +48,14 @@ function getDueString(task: Task): string | undefined {
 function TaskComponent({ task, openTask }: { task: Task; openTask: () => void }) {
 	const { editTask } = useContext(ProjectContext)
 	const due = getDueString(task)
-	const b = <>
+	const b = <div className="ml-4">
 		<h2 className="text-md text-left">{task.name}</h2>
 		<Labels labels={task.labels} onClick={() => { }} />
 		{due ? <p className="text-left">{due}</p> : undefined}
 		<p className="text-slate-500 text-sm text-left mb-2">
 			{task.description}
 		</p>
-	</>
+	</div>
 
 	if (task.completed)
 		return (
@@ -69,14 +69,12 @@ function TaskComponent({ task, openTask }: { task: Task; openTask: () => void })
 		<ListItem
 			onClick={openTask}>
 			{b}
-			<BottomRightContainer>
-				<button
-					className="text-center rounded text-sm shadow bg-slate-50 py-1 px-2"
-					onClick={(e) => { e.stopPropagation(); editTask({ id: task.id, completed: true }) }}
-				>
-					Complete
-				</button>
-			</BottomRightContainer>
+			<button
+				className="absolute left-2 top-4"
+				onClick={(e) => { e.stopPropagation(); editTask({ id: task.id, completed: true }) }}
+			>
+				<Image width={20} height={20} src="/check_box_outline_blank.svg" alt="incomplete box" />
+			</button>
 		</ListItem>
 	);
 }

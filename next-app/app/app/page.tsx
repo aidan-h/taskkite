@@ -15,6 +15,7 @@ import {
 import SubmitCancel from "../_components/SubmitCancel";
 import { ProjectSync } from "../_lib/projectSync";
 import { ActiveTaskList } from "../_components/TaskList";
+import { ProjectContext, createProjectInterface } from "../_lib/ProjectContext";
 
 function ProjectItem({ project }: { project: ProjectIdentifier }) {
 	const router = useRouter();
@@ -114,12 +115,14 @@ function CreateProjectButton() {
 }
 
 function ProjectDueToday({ project }: { project: ProjectSync }) {
-	if (!project.data)
+	const router = useRouter()
+	const pInterface = createProjectInterface(project);
+	if (!pInterface)
 		return <div>Loading</div>
-	return <div>
-		<h1>{project.data.name}</h1>
+	return <ProjectContext.Provider value={pInterface}>
+		<button className="block mb-4 text-lg" onClick={() => router.push("/app/project/" + project.id)}>{project.data.name}</button>
 		<ActiveTaskList project={project.data} />
-	</div>
+	</ProjectContext.Provider>
 }
 
 function DueToday() {
