@@ -70,8 +70,6 @@ function Form({
 					<form
 						onSubmit={handleSubmit}
 					>
-						<input type="date" value={values.dueDate} onChange={handleChange} name="dueDate" className="mr-2" />
-						<input type="time" step={2} value={values.dueTime} onChange={handleChange} name="dueTime" className="mb-4" />
 						<input
 							autoFocus={true}
 							type="text"
@@ -82,6 +80,8 @@ function Form({
 						/>
 						<br />
 						{errors.name}
+						<input type="date" value={values.dueDate} onChange={handleChange} name="dueDate" className="mr-2" />
+						<input type="time" step={2} value={values.dueTime} onChange={handleChange} name="dueTime" className="mb-4" />
 						<textarea
 							className="w-full pl-2 mb-10 bg-slate-50 rounded shadow"
 							onChange={handleChange}
@@ -104,9 +104,11 @@ export function AddLabelForm({ task }: { task: Task }) {
 	const { addLabel } = useContext(ProjectContext);
 	return <Formik initialValues={{ name: "" }} validate={(values) => {
 		let errors: FormikErrors<{ name: string }> = {}
+		if (task.labels && task.labels.find((label) => label == values.name) != undefined)
+			errors.name = "duplicate label"
 		validateInputValue(nameSchema, values.name, errors, "name");
 		return errors
-	}} onSubmit={(values, { setSubmitting }) => { addLabel({ name: values.name, id: task.id }); setSubmitting(false) }}>
+	}} onSubmit={(values, { resetForm, setSubmitting }) => { addLabel({ name: values.name, id: task.id }); setSubmitting(false); resetForm() }}>
 		{({ values, handleChange, isValid, submitForm, errors, handleSubmit }) => (
 			<form onSubmit={handleSubmit} className="inline">
 				<input

@@ -37,7 +37,7 @@ function useProjectsData(appData: AppData | undefined): ProjectSync[] {
 		setProjects(appData.projects.map((projectIdentifier) => {
 			return {
 				id: projectIdentifier.id,
-				status: SyncStatus.FAILED,
+				status: SyncStatus.WAITING,
 				data: undefined,
 				shadow: undefined,
 			}
@@ -60,7 +60,7 @@ function useProjectsData(appData: AppData | undefined): ProjectSync[] {
 				data: p.data,
 			};
 			const fetch = createSyncFetch(syncState, setSyncState, () => getProject({ projectId: p.id }));
-			if (p.status == SyncStatus.FAILED)
+			if (p.status == SyncStatus.WAITING)
 				fetch()
 
 			return createProjectSync({

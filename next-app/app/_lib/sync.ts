@@ -6,6 +6,7 @@ export enum SyncStatus {
 	PENDING,
 	SYNCED,
 	FAILED,
+	WAITING,
 }
 
 export function syncStatusText(status: SyncStatus): string {
@@ -26,7 +27,6 @@ export class SyncClient<T> {
 }
 
 export function useSyncClient<T>(fetcher: () => Promise<T>): SyncClient<T> {
-
 	const [syncState, setSyncState] = useState({ status: SyncStatus.SYNCED, data: undefined } as SyncState<T>)
 	const fetch = createSyncFetch(syncState, setSyncState, fetcher);
 	useEffect(fetch, [])
@@ -110,7 +110,7 @@ export function getPushEvent<T, E>(
 
 	if (
 		shadow &&
-		state.status != SyncStatus.PENDING &&
+		state.status == SyncStatus.SYNCED &&
 		shadow.queuedEvents.length > 0
 	) {
 		pushEvents(state, setState, shadow, sync, applyEvent);

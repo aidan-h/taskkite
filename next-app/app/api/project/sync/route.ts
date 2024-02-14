@@ -64,7 +64,7 @@ async function getProjectHistoryCount(
 	return await getCount(db, "project", "history_count", "id", projectId);
 }
 
-const ADD_LABEL_STATEMENT = `INSERT INTO label (project_id, task_id, name, due_date, due_time) VALUES (?, ?, ?, ?, ?)`;
+const ADD_LABEL_STATEMENT = `INSERT INTO label (project_id, task_id, name) VALUES (?, ?, ?)`;
 async function createTask(
 	db: Connection,
 	data: CreateTaskEvent,
