@@ -9,7 +9,10 @@ export default function RootLayout({
 }) {
 	return (
 		<html lang="en">
-			<body className="bg-slate-200">
+			<head>
+				<link rel="icon" href="/icon.png" type="image/png" />
+			</head>
+			<body className="bg-slate-50">
 				<main>
 					<SessionProvider>{children}</SessionProvider>
 				</main>

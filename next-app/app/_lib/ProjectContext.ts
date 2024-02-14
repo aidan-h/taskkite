@@ -42,6 +42,8 @@ export const ProjectContext = createContext<ProjectInterface>({
 });
 
 export function createProjectInterface(projectSync: ProjectSync): ProjectInterface | undefined {
+	if (!projectSync.data)
+		return undefined
 	return {
 		sync: () => projectSync.fetch(),
 		status: projectSync.status,
