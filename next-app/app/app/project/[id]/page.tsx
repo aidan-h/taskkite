@@ -3,6 +3,7 @@ import AccountButton from "@/app/_components/AccountButton";
 import { CenterContainer } from "@/app/_components/CenterContainer";
 import ProjectSettingsButton from "@/app/_components/ProjectSettingsButton";
 import { TaskList } from "@/app/_components/TaskList";
+import Title from "@/app/_components/Title";
 import { ProjectContext } from "@/app/_lib/ProjectContext";
 
 export default function Page() {
@@ -10,7 +11,7 @@ export default function Page() {
 		<ProjectContext.Consumer>
 			{({ project, sync }) => (
 				<CenterContainer>
-					<h1 className="text-5xl mb-6 text-center">{project.name}</h1>
+					<Title>{project.name}</Title>
 					<TaskList
 						createTask={(e) => sync.emit(["createTask", e])}
 						tasks={project.tasks}
