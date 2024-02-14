@@ -1,4 +1,4 @@
-# To-Do App
+# Taskkite
 **Technologies**
 NextJS, React, TypeScript, TailwindCSS, MySQL, Docker
 
