@@ -16,7 +16,9 @@ function Message({ children }: { children: ReactNode }) {
 }
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-	const { data } = useSession();
+	const d = useSession();
+	let data = null
+	if (d) data = d.data
 	const clientData = useClientData();
 	const router = useRouter();
 

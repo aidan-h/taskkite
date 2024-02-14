@@ -1,3 +1,4 @@
+"use client";
 import { useState } from "react";
 import { DateTime } from "luxon";
 import { DeleteTaskEvent, EditTaskEvent, Task } from "../_lib/data";
