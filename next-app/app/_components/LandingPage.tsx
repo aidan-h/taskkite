@@ -30,9 +30,7 @@ function Providers({ providers, setState }: { providers: Provider[], setState: (
 		<button className="mx-auto w-96 block bg-slate-300 p-4" key={provider.name} onClick={
 			() => {
 				setState(LoginState.Pending)
-				signIn(provider.id).then((v) =>
-					setState(v ? v.ok ? LoginState.Succeeded : LoginState.Failed : LoginState.Succeeded)
-				).catch((err) => { console.error(err); setState(LoginState.Failed) })
+				signIn(provider.id).catch((err) => { console.error(err); setState(LoginState.Failed) })
 			}}>Sign in with {provider.name}</button>
 	)
 }
@@ -43,11 +41,11 @@ function Descriptor({ children }: { children: ReactNode }) {
 
 export default function ClientLandingPage({ providers }: { providers: Provider[] }) {
 	const { data: session } = useSession();
-	const [state, setState] = useState(LoginState.None)
+	const [state, setState] = useState(session ? LoginState.Succeeded : LoginState.None)
 	const router = useRouter();
 
 	useEffect(() => {
-		if (session && session.user) {
+		if (session) {
 			setState(LoginState.Succeeded)
 			router.push("/app");
 		}
