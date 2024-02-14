@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
 import { ProjectData, Task } from "../_lib/schemas";
-import { TaskEditing } from "./TaskCreation";
 import TaskComponent, { getTaskDateTime } from "./TaskComponent";
+import TaskEdit from "./TaskEdit";
 
 function sortTasks(a: Task, b: Task): number {
 	if (a.completed && !b.completed) return 1;
@@ -29,12 +29,12 @@ export function TaskList({
 	return tasks.sort(sortTasks).map((task) => {
 		if (task.id == taskEditing)
 			return (
-				<TaskEditing
+				<TaskEdit
 					projectId={projectId}
-					close={() => setTaskEditing(undefined)}
+					cancel={() => setTaskEditing(undefined)}
 					key={task.id}
 					task={task}
-				></TaskEditing>
+				></TaskEdit>
 			);
 		return (
 			<TaskComponent

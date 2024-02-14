@@ -12,8 +12,8 @@ import { useAppSelector } from "@/app/_lib/hooks";
 import { updateAccount } from "@/app/_lib/slices/accountSettingsSlice";
 import { Formik, FormikErrors } from "formik";
 import { signOut } from "next-auth/react";
-import { useRouter } from "next/router";
 import { useDispatch } from "react-redux";
+import { useRouter } from "next/navigation";
 
 function Account() {
 	const accountSettings = useAppSelector((app) => app.accountSettings);

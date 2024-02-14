@@ -33,7 +33,7 @@ const taskBaseSchema = z.object({
 	dueTime: dueTimeSchema,
 	description: descriptionSchema,
 });
-const labelsSchema = z.array(nameSchema).optional();
+const labelsSchema = z.array(nameSchema);
 
 const taskAfterBaseSchema = z
 	.object({
@@ -71,11 +71,11 @@ const affectLabelSchema = z
 export const taskSchema = taskAfterBaseSchema
 	.merge(taskAndLabelsSchema)
 	.merge(taskIdSchema);
+
 export type Task = z.infer<typeof taskSchema>;
-const editTaskSchema = taskIdSchema
-	.merge(taskAfterBaseSchema)
-	.merge(affectProjectSchema);
+
 export const updateNameSchema = affectProjectSchema.merge(z.object({ name: nameSchema }));
+export const editTaskSchema = taskSchema.merge(affectProjectSchema);
 export type CreateTaskEvent = z.infer<typeof createTaskSchema>;
 export type EditTaskEvent = z.infer<typeof editTaskSchema>;
 export type DeleteLabelEvent = z.infer<typeof affectLabelSchema>;
@@ -109,7 +109,7 @@ export const projectEventSchemas: ProjectEventSchemas = {
 
 export const projectEventSchema = z.union([
 	z.tuple([z.literal("createTask"), createTaskSchema]),
-	z.tuple([z.literal("editTask"), editTaskSchema]),
+	z.tuple([z.literal("editTask"), taskSchema]),
 	z.tuple([z.literal("deleteTask"), affectTaskSchema]),
 	z.tuple([z.literal("deleteLabel"), affectLabelSchema]),
 	z.tuple([z.literal("addLabel"), affectLabelSchema]),

@@ -2,11 +2,9 @@
 import { ReactNode } from "react";
 import Image from "next/image";
 import { DateTime } from "luxon";
-import { DeleteTaskEvent, EditTaskEvent, ProjectEvents, Task } from "../_lib/schemas";
-import { Labels } from "./TaskCreation";
+import { DeleteTaskEvent, EditTaskEvent, Task } from "../_lib/schemas";
 import { ListItem, SecondaryListItem } from "./listItems";
 import { pushProjectEvent } from "../_lib/slices/projectsSlice";
-import { Event } from "../_lib/sync";
 import useProjects from "../_lib/useProjects";
 import { useAppDispatch } from "../_lib/hooks";
 
@@ -84,6 +82,10 @@ function DueComponent({
 	);
 }
 
+function Labels({ labels }: { labels: string[] }) {
+	return labels.map((label) => <div key={label}>{label}</div>);
+}
+
 export default function TaskComponent({
 	task,
 	openTask,
@@ -99,7 +101,7 @@ export default function TaskComponent({
 	const b = (
 		<div className="ml-6 relative">
 			<h2 className="text-md text-left">{task.name}</h2>
-			<Labels labels={task.labels} onClick={() => { }} />
+			<Labels labels={task.labels} />
 			{due ? <DueComponent state={due[1]}>{due[0]}</DueComponent> : undefined}
 		</div>
 	);

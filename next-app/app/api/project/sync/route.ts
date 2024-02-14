@@ -34,6 +34,15 @@ async function getProjectHistoryCount(
 	return await getCount(db, "project", "history_count", "id", projectId);
 }
 
+async function addLabels(db: Connection, projectId: number, taskId: number, labels: string[]) {
+	if (labels.length == 0) return
+	const query =
+		"INSERT IGNORE INTO label (project_id, task_id, name) VALUES" +
+		(labels.map((_, index) => index + 1 == labels.length ? "(?,?,?)" : "(?,?,?),") as string[]).reduce((prev, curr) => prev + curr)
+	const values = labels.flatMap((label) => [projectId, taskId, label]);
+	await db.execute(query, values)
+}
+
 const ADD_LABEL_STATEMENT = `INSERT INTO label (project_id, task_id, name) VALUES (?, ?, ?)`;
 async function createTask(
 	db: Connection,
@@ -81,9 +90,10 @@ async function editTask(
 	db: Connection,
 	data: EditTaskEvent,
 ) {
+	console.log(data);
 	let statement = "UPDATE task SET ";
 	const fields = TASK_FIELDS.filter(([field]) => data[field] != undefined);
-	let values = fields.map(([field]) => data[field]);
+	let values = fields.map(([field]) => data[field] === undefined ? null : data[field]);
 
 	for (let i = 0; i < values.length - 1; i++) {
 		const [, dbField] = fields[i];
@@ -91,10 +101,14 @@ async function editTask(
 	}
 	const [, dbField] = fields[fields.length - 1];
 	statement += dbField + " = ? WHERE project_id = ? AND id = ?";
+	//TODO this is WRONG!
 	values.push(data.projectId);
 	values.push(data.id);
 
+	console.log(statement, values);
 	await db.execute(statement, values);
+	if (data.labels)
+		await addLabels(db, data.projectId, data.id, data.labels);
 }
 
 const DELETE_TASK_STATEMENT =
