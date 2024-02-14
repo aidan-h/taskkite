@@ -1,11 +1,13 @@
 "use client";
 import { useSession } from "next-auth/react";
-import useClientData, { AppDataContext } from "../_lib/useUserData";
+import { AppDataContext } from "../_lib/useUserData";
 import { useRouter } from "next/navigation";
 import { ReactNode, useEffect } from "react";
 import Descriptor from "../_components/Descriptor";
 import Hero from "../_components/Hero";
 import NavigationPanel from "../_components/NavigationPanel";
+import { useSyncClient } from "../_lib/sync";
+import { getAppData } from "../_lib/api";
 
 function Message({ children }: { children: ReactNode }) {
 	return (
@@ -19,7 +21,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 	const d = useSession();
 	let data = null
 	if (d) data = d.data
-	const clientData = useClientData();
+	const clientData = useSyncClient(getAppData);
 	const router = useRouter();
 
 	useEffect(() => {

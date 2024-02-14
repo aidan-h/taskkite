@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useState } from "react";
 
 export enum SyncStatus {
@@ -18,20 +19,23 @@ export interface SyncState<T> {
 	data: T | undefined;
 }
 
-export interface SyncClient<T> {
+export class SyncClient<T> {
 	fetch: () => void;
 	setState: (state: SyncState<T>) => void;
 	state: SyncState<T>;
 }
 
 export function useSyncClient<T>(fetcher: () => Promise<T>): SyncClient<T> {
-	const [state, setState] = useState<SyncState<T>>({
-		status: SyncStatus.PENDING,
-		data: undefined,
-	});
 
-	function fetchData() {
-		if (state.data == undefined || state.status != SyncStatus.PENDING) {
+	const [syncState, setSyncState] = useState({ status: SyncStatus.SYNCED, data: undefined } as SyncState<T>)
+	const fetch = createSyncFetch(syncState, setSyncState, fetcher);
+	useEffect(fetch, [])
+	return { setState: setSyncState, state: syncState, fetch: fetch }
+}
+
+export function createSyncFetch<T>(state: SyncState<T>, setState: (state: SyncState<T>) => void, fetcher: () => Promise<T>): () => void {
+	return () => {
+		if (state.status != SyncStatus.PENDING) {
 			setState({
 				status: SyncStatus.PENDING,
 				data: state.data,
@@ -46,13 +50,6 @@ export function useSyncClient<T>(fetcher: () => Promise<T>): SyncClient<T> {
 				.catch(() => setState({ status: SyncStatus.FAILED, data: state.data }));
 		}
 	}
-	useEffect(fetchData, []);
-
-	return {
-		state: state,
-		setState: setState,
-		fetch: fetchData,
-	};
 }
 
 export interface Shadow<T, E> {
@@ -60,23 +57,19 @@ export interface Shadow<T, E> {
 	data: T;
 }
 
-export interface IncrementalData<T, E> {
-	emit: (event: E) => void;
-	status: SyncStatus;
-	fetch: () => void;
-	data: T | undefined;
-}
+export type PushEvent<E> = (event: E) => void;
 
 function pushEvents<T, E>(
-	syncClient: SyncClient<T>,
+	state: SyncState<T>,
+	setState: (state: SyncState<T>) => void,
 	shadow: Shadow<T, E>,
 	sync: (events: E[], data: T) => Promise<E[]>,
 	applyEvent: (data: T, event: E) => T,
 ) {
 	const events = shadow.queuedEvents;
 	shadow.queuedEvents = [];
-	syncClient.setState({
-		data: syncClient.state.data,
+	setState({
+		data: state.data,
 		status: SyncStatus.PENDING,
 	});
 
@@ -85,7 +78,7 @@ function pushEvents<T, E>(
 			serverEvents.forEach((event) => {
 				shadow.data = applyEvent(shadow.data, event);
 			});
-			syncClient.setState({
+			setState({
 				status: SyncStatus.SYNCED,
 				data: structuredClone(shadow.data),
 			});
@@ -93,54 +86,49 @@ function pushEvents<T, E>(
 		.catch((err) => {
 			console.error(err);
 			shadow.queuedEvents = events.concat(shadow.queuedEvents);
-			syncClient.setState({
-				data: syncClient.state.data,
+			setState({
+				data: state.data,
 				status: SyncStatus.FAILED,
 			});
 		});
 }
 
-export function useIncrementalData<T, E>(
-	fetcher: () => Promise<T>,
+export function getPushEvent<T, E>(
 	sync: (events: E[], data: T) => Promise<E[]>,
+	state: SyncState<T>,
+	setState: (state: SyncState<T>) => void,
 	applyEvent: (data: T, event: E) => T,
-): IncrementalData<T, E> {
-	const syncClient = useSyncClient(fetcher);
-	const [shadow, setShadow] = useState<Shadow<T, E> | undefined>(undefined);
-
-	if (!shadow && syncClient.state.data) {
+	shadow: Shadow<T, E> | undefined,
+	setShadow: (shadow: Shadow<T, E> | undefined) => void,
+): PushEvent<E> {
+	if (!shadow && state.data) {
 		setShadow({
-			data: syncClient.state.data,
+			data: state.data,
 			queuedEvents: [],
 		});
 	}
 
 	if (
 		shadow &&
-		syncClient.state.status != SyncStatus.PENDING &&
+		state.status != SyncStatus.PENDING &&
 		shadow.queuedEvents.length > 0
 	) {
-		pushEvents(syncClient, shadow, sync, applyEvent);
+		pushEvents(state, setState, shadow, sync, applyEvent);
 	}
 
-	return {
-		status: syncClient.state.status,
-		emit: (event) => {
-			if (!syncClient.state.data || !shadow) {
-				console.error("couldn't process event without data" + event);
-				return;
-			}
+	return (event) => {
+		if (!state.data || !shadow) {
+			console.error("couldn't process event without data" + event);
+			return;
+		}
 
-			syncClient.setState({
-				status: syncClient.state.status,
-				data: applyEvent(syncClient.state.data, event),
-			});
-			shadow.queuedEvents.push(event);
+		setState({
+			status: state.status,
+			data: applyEvent(state.data, event),
+		});
+		shadow.queuedEvents.push(event);
 
-			if (syncClient.state.status == SyncStatus.PENDING) return;
-			pushEvents(syncClient, shadow, sync, applyEvent);
-		},
-		fetch: () => { },
-		data: syncClient.state.data,
-	};
+		if (state.status == SyncStatus.PENDING) return;
+		pushEvents(state, setState, shadow, sync, applyEvent);
+	}
 }

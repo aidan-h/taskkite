@@ -1,5 +1,5 @@
-import { createContext } from "react";
-import { getAppData, getProject, syncProject } from "./api";
+import { createContext, useState } from "react";
+import { getProject, syncProject } from "./api";
 import {
 	AddLabelEvent,
 	AppData,
@@ -12,10 +12,11 @@ import {
 	Task,
 } from "./data";
 import {
-	IncrementalData as IncrementalSync,
 	SyncClient,
 	SyncStatus,
-	useIncrementalData,
+	getPushEvent,
+	PushEvent,
+	Shadow,
 	useSyncClient,
 } from "./sync";
 
@@ -25,7 +26,7 @@ export type ProjectClientData = SyncClient<Project> & {
 	emitEvent: (event: ClientEvent) => void;
 };
 
-export type ClientData = SyncClient<AppData>;
+export type AppSync = SyncClient<AppData>;
 export const AppDataContext = createContext<{
 	data: AppData;
 	update: () => void;
@@ -41,7 +42,7 @@ export const AppDataContext = createContext<{
 function editTasks(project: Project, id: number, action: (task: Task) => Task): Task[] {
 	const index = project.tasks.findIndex((task) => task.id == id);
 	if (index == -1) {
-		console.error("couldn't apply event to unfound task", event, project);
+		console.error("couldn't apply event to unfound task", project);
 		return project.tasks;
 	}
 	let tasks = project.tasks.slice();
@@ -143,21 +144,32 @@ function applyEvent(project: Project, [name, data]: ClientEvent): Project {
 	return project;
 }
 
-export type ProjectSync = IncrementalSync<Project, ClientEvent>;
-
-export function useProjectSync(id: number): ProjectSync {
-	return useIncrementalData(
-		() => getProject({ projectId: id }),
-		(events, data) =>
-			syncProject({
-				projectId: data.id,
-				changes: events,
-				index: data.historyCount,
-			}),
-		applyEvent,
-	);
+export type ProjectSync = {
+	emit: PushEvent<ClientEvent>;
+	data: Project | undefined;
+	status: SyncStatus;
+	fetch: () => void;
 }
 
-export default function useClientData(): ClientData {
-	return useSyncClient(getAppData);
+export function useProjectSync(id: number): ProjectSync {
+	const [shadow, setShadow] = useState(undefined as Shadow<Project, ClientEvent> | undefined)
+	const client = useSyncClient(() => getProject({ projectId: id }));
+	return {
+		fetch: client.fetch,
+		data: client.state.data,
+		status: client.state.status,
+		emit: getPushEvent(
+			(events, data) =>
+				syncProject({
+					projectId: data.id,
+					changes: events,
+					index: data.historyCount,
+				}),
+			client.state,
+			client.setState,
+			applyEvent,
+			shadow,
+			setShadow
+		)
+	};
 }
