@@ -64,7 +64,7 @@ async function createTask(
 }
 
 const EDIT_TASK_STATEMENT =
-	"UPDATE task SET archived = ?, completed = ?, description = ?, name = ? WHERE project_id = ?, id = ?";
+	"UPDATE task SET archived = ?, completed = ?, description = ?, name = ? WHERE project_id = ? AND id = ?";
 
 async function editTask(
 	db: Connection,

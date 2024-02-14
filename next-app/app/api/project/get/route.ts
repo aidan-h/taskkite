@@ -1,6 +1,7 @@
 import { AffectProject, Project, affectProjectSchema } from "@/app/_lib/data";
 import { handleClientPostReq } from "@/app/_lib/handleClient";
 import { isOfProject } from "@/app/_lib/isOfProject";
+import { parseSQLBool } from "@/app/_lib/mysql";
 import { Connection, RowDataPacket } from "mysql2/promise";
 
 const LOCK_STATEMENT = `LOCK TABLES project READ, task READ`;
@@ -25,8 +26,8 @@ async function getProject(db: Connection, projectId: number): Promise<Project> {
 		id: number;
 		name: string;
 		description: string;
-		archived: boolean;
-		completed: boolean;
+		archived: number;
+		completed: number;
 	}[];
 	if (projectRow == undefined) throw "couldn't find project " + projectId;
 	return {
@@ -39,9 +40,9 @@ async function getProject(db: Connection, projectId: number): Promise<Project> {
 			return {
 				name: row.name,
 				id: row.id,
-				archived: row.archived,
+				archived: parseSQLBool(row.archived),
 				description: row.description,
-				completed: row.completed,
+				completed: parseSQLBool(row.completed),
 			};
 		}),
 	};

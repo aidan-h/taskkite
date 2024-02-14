@@ -1,10 +1,11 @@
 "use client";
-import { CreateTaskEvent, descriptionSchema, nameSchema } from "@/app/_lib/data";
+import { CreateTaskEvent, Task, descriptionSchema, nameSchema } from "@/app/_lib/data";
 import { validateInputValue } from "@/app/_lib/formikHelpers";
 import { Formik, FormikErrors } from "formik";
 import { useState } from "react";
+import { EditTask } from "./TaskList";
 
-function Form({ close, createTask }: { close: () => void, createTask: (event: CreateTaskEvent) => void }) {
+function Form({ close, onSubmit, task }: { task: Task, close: () => void, onSubmit: (task: Task) => void }) {
 	return (
 		<Formik
 			validate={(values) => {
@@ -19,14 +20,18 @@ function Form({ close, createTask }: { close: () => void, createTask: (event: Cr
 				return errors;
 			}}
 			onSubmit={(values, { setSubmitting }) => {
-				createTask({
+				onSubmit({
+					id: task.id,
+					archived: task.archived,
+					completed: task.completed,
+					labels: task.labels,
 					name: values.name,
 					description: values.description,
 				})
 				close()
 				setSubmitting(false)
 			}}
-			initialValues={{ name: "Task name", description: "" }}
+			initialValues={{ name: task.name, description: task.description }}
 		>
 			{({ handleSubmit, isSubmitting, handleChange, values, errors }) => (
 				<form onSubmit={handleSubmit}>
@@ -51,7 +56,7 @@ function Form({ close, createTask }: { close: () => void, createTask: (event: Cr
 					{errors.description}
 					<br />
 					<button type="submit" disabled={isSubmitting}>
-						Create Task
+						Submit
 					</button>
 				</form>
 			)}
@@ -59,8 +64,16 @@ function Form({ close, createTask }: { close: () => void, createTask: (event: Cr
 	);
 }
 
+export function TaskEditing({ editTask, task, close }: { close: () => void, task: Task, editTask: EditTask }) {
+	return <Form task={task} close={close} onSubmit={editTask} />;
+}
+
 export default function TaskCreation({ createTask }: { createTask: (event: CreateTaskEvent) => void }) {
 	const [active, setActive] = useState(false);
-	if (active) return <Form close={() => setActive(false)} createTask={createTask} />;
+	if (active) return <Form task={{ name: "New Task", id: -1 }} close={() => setActive(false)} onSubmit={(task) => createTask({
+		name: task.name,
+		description: task.description,
+		labels: task.labels
+	})} />;
 	return <button onClick={() => setActive(true)}>Create task</button>;
 }

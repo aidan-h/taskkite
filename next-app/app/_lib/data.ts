@@ -9,7 +9,7 @@ export const descriptionSchema = z.string().max(200).trim().optional();
 export type Description = z.infer<typeof descriptionSchema>;
 
 const idSchema = z.number().nonnegative().int();
-const boolSchema = z.boolean().optional();
+const boolSchema = z.boolean()
 
 const labelsSchema = z.array(nameSchema).optional();
 

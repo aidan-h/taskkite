@@ -1,5 +1,11 @@
 import mysql from "mysql2/promise";
 
+export function parseSQLBool(v: number): boolean {
+	if (v == 0) return false
+	if (v == 1) return true
+	throw "couldn't parse SQL boolean " + v
+}
+
 export const db = mysql.createPool({
 	host: process.env.MYSQL_HOST,
 	user: process.env.MYSQL_USER,
