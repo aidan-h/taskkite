@@ -6,9 +6,7 @@ import {
 	ListItem,
 	ListItemButton,
 } from "@/app/_components/listItems";
-import { deleteProject as deleteProjectF } from "@/app/_lib/api";
 import ProjectPageContext from "@/app/_lib/ProjectPageContext";
-import { deleteProject } from "@/app/_lib/slices/projectsSlice";
 import { useRouter } from "next/navigation";
 import { useContext, useState } from "react";
 import { useDispatch } from "react-redux";
@@ -33,12 +31,7 @@ function DeleteProject({ id }: { id: number }) {
 				confirmText="Are you sure you want to delete this project? It can't be undone!"
 				action={() => {
 					setDeleting(true);
-					deleteProjectF(id)
-						.then(() => {
-							dispatch(deleteProject(id));
-							router.push("/app");
-						})
-						.catch(() => setDeleting(false));
+					//TODO delete Project
 				}}
 			/>
 		);
@@ -49,7 +42,7 @@ export default function Page() {
 	const project = useContext(ProjectPageContext);
 	return (
 		<CenterContainer>
-			<Title>{project.client.name} Settings</Title>
+			<Title>{project.name} Settings</Title>
 			<DeleteProject id={project.id} />
 			<BackComponent id={project.id} />
 		</CenterContainer>

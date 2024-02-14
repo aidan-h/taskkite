@@ -1,6 +1,6 @@
 import { createContext } from "react";
-import { ClientProject } from "./slices/projectsSlice";
+import { Project } from "./schemas";
 
-const ProjectPageContext = createContext({} as ClientProject);
+const ProjectPageContext = createContext({} as Project);
 
 export default ProjectPageContext;

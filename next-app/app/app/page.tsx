@@ -4,8 +4,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ProjectData, nameSchema } from "../_lib/schemas";
 import { fromZodError } from "zod-validation-error";
-import { stringify } from "querystring";
-import { createProject } from "../_lib/api";
 import { CenterContainer } from "../_components/CenterContainer";
 import { SecondaryListItemButton } from "../_components/listItems";
 import SubmitCancel from "../_components/SubmitCancel";
@@ -13,7 +11,8 @@ import { ActiveTaskList } from "../_components/TaskList";
 import Title from "../_components/Title";
 import { useAppSelector } from "../_lib/hooks";
 import { useDispatch } from "react-redux";
-import { addProject } from "../_lib/slices/projectsSlice";
+import useProjects from "../_lib/useProjects";
+import { createProject } from "../_lib/slices/projectsSlice";
 
 interface FormProps {
 	name: string;
@@ -24,7 +23,6 @@ function CreateProjectForm({
 }: {
 	setCreateProject: (value: boolean) => void;
 }) {
-	const [err, setErr] = useState(null as null | string);
 	const appData = useAppSelector((data) => data);
 	const dispatch = useDispatch();
 
@@ -39,22 +37,16 @@ function CreateProjectForm({
 				return errors;
 			}}
 			onSubmit={(values, { setSubmitting }) => {
-				createProject(values.name)
-					.then(({ id }) => {
-						dispatch(
-							addProject({
-								data: { tasks: [], name: values.name, historyCount: 0, taskCount: 0 },
-								id,
-								owner: appData.accountSettings.email,
-							}),
-						);
-						setSubmitting(false);
-						setCreateProject(false);
-					})
-					.catch((err) => {
-						setErr(stringify(err));
-						setSubmitting(false);
-					});
+				dispatch(
+					createProject({
+						client: {
+							data: { id: 2, tasks: [], owner: appData.accountSettings.email, name: values.name, taskCount: 0 },
+							historyCount: 0,
+						}
+					}),
+				);
+				setSubmitting(false);
+				setCreateProject(false);
 			}}
 		>
 			{({ values, errors, isSubmitting, handleSubmit, handleChange }) => {
@@ -63,7 +55,6 @@ function CreateProjectForm({
 						className="p-4 bg-slate-100 rounded shadow-lg w-full, relative"
 						onSubmit={handleSubmit}
 					>
-						{err}
 						<input
 							autoFocus={true}
 							className="bg-slate-300 px-2 w-full mb-6 rounded py-2"
@@ -122,10 +113,10 @@ function ProjectDueToday({
 }
 
 function DueToday() {
-	const projects = useAppSelector((data) => data.projects.projects);
+	const projects = useProjects()
 	return projects.map((project) =>
 		project.client ? (
-			<ProjectDueToday key={project.id} data={project.client} id={project.id} />
+			<ProjectDueToday key={project.client.data.id} data={project.client.data} id={project.client.data.id} />
 		) : (
 			<>loading</>
 		),

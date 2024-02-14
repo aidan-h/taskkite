@@ -1,28 +1,28 @@
 import {
 	EditTaskEvent,
-	ProjectData,
+	Project,
 	ProjectEvents,
 	Task,
 } from "./schemas";
 import { EventHandlers } from "./sync";
 
-export const clientProjectEventHandlers: EventHandlers<ProjectEvents, ProjectData> = {
-	createTask: (project, event) => {
-		project.tasks.push(
+export const clientProjectEventHandlers: EventHandlers<ProjectEvents, Project> = {
+	createTask: ({ data, historyCount }, event) => {
+		data.tasks.push(
 			{
 				completed: false,
 				archived: false,
 				name: event.name,
 				description: event.description,
 				labels: event.labels,
-				id: project.historyCount,
+				id: historyCount,
 				dueDate: event.dueDate,
 				dueTime: event.dueTime,
 			});
-		project.taskCount++;
+		data.taskCount++;
 	},
-	editTask: (project, event) => {
-		const task = project.tasks.find((task) => task.id == event.id);
+	editTask: ({ data }, event) => {
+		const task = data.tasks.find((task) => task.id == event.id);
 		if (!task) return;
 		const fields: (keyof Task & keyof EditTaskEvent)[] = [
 			"name",
@@ -39,18 +39,18 @@ export const clientProjectEventHandlers: EventHandlers<ProjectEvents, ProjectDat
 			}
 		}
 	},
-	deleteTask: (project, event) => {
-		project.tasks.filter((task) => task.id != event.id);
+	deleteTask: ({ data }, event) => {
+		data.tasks.filter((task) => task.id != event.id);
 	},
-	addLabel: (project, event) => {
-		const task = project.tasks.find((task) => task.id == event.id);
+	addLabel: ({ data }, event) => {
+		const task = data.tasks.find((task) => task.id == event.id);
 		if (!task) return;
 		if (!task.labels) task.labels = [];
 		if (task.labels.find((label) => label == event.name) == undefined)
 			task.labels.push(event.name)
 	},
-	deleteLabel: (project, event) => {
-		const task = project.tasks.find((task) => task.id == event.id);
+	deleteLabel: ({ data }, event) => {
+		const task = data.tasks.find((task) => task.id == event.id);
 		if (!task || !task.labels) return;
 		task.labels.filter((label) => label != event.name) == undefined
 	}

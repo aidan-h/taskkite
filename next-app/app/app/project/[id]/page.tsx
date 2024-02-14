@@ -12,8 +12,8 @@ export default function Page() {
 	const project = useContext(ProjectPageContext);
 	return (
 		<CenterContainer>
-			<Title>{project.client.name}</Title>
-			<ActiveTaskList projectId={project.id} project={project.client} />
+			<Title>{project.name}</Title>
+			<ActiveTaskList projectId={project.id} project={project} />
 			<TaskCreation projectId={project.id} />
 			<button
 				className="block mx-auto underline underline-offset-4 hover:text-indigo-500 mb-4 px-4"
@@ -24,7 +24,7 @@ export default function Page() {
 			{showCompleted ? (
 				<TaskList
 					projectId={project.id}
-					tasks={project.client.tasks.filter((task) => !task.archived && task.completed)}
+					tasks={project.tasks.filter((task) => !task.archived && task.completed)}
 				/>
 			) : undefined}
 			<ProjectSettingsButton id={project.id} />

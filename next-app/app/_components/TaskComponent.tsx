@@ -2,11 +2,13 @@
 import { ReactNode } from "react";
 import Image from "next/image";
 import { DateTime } from "luxon";
-import { DeleteTaskEvent, EditTaskEvent, Task } from "../_lib/schemas";
+import { DeleteTaskEvent, EditTaskEvent, ProjectEvents, Task } from "../_lib/schemas";
 import { Labels } from "./TaskCreation";
 import { ListItem, SecondaryListItem } from "./listItems";
-import { useDispatch } from "react-redux";
-import { editTask } from "../_lib/slices/projectsSlice";
+import { pushProjectEvent } from "../_lib/slices/projectsSlice";
+import { Event } from "../_lib/sync";
+import useProjects from "../_lib/useProjects";
+import { useAppDispatch } from "../_lib/hooks";
 
 export type DeleteTask = (e: DeleteTaskEvent) => void;
 export type EditTask = (e: EditTaskEvent) => void;
@@ -91,7 +93,8 @@ export default function TaskComponent({
 	projectId: number;
 	openTask: () => void;
 }) {
-	const dispatch = useDispatch();
+	const dispatch = useAppDispatch();
+	const projects = useProjects();
 	const due = getDueString(task);
 	const b = (
 		<div className="ml-6 relative">
@@ -104,19 +107,19 @@ export default function TaskComponent({
 	if (task.completed)
 		return (
 			<SecondaryListItem
-				onClick={() =>
+				onClick={() => {
 					dispatch(
-						editTask({ ...task, projectId: projectId, completed: false }),
+						pushProjectEvent(["editTask", { ...task, projectId, completed: false }], projects),
 					)
-				}
+				}}
 			>
 				{b}
-				<div
+				< div
 					className="absolute left-0 top-0 h-full w-10"
 					onClick={(e) => {
 						e.stopPropagation();
 						dispatch(
-							editTask({ ...task, projectId: projectId, completed: false }),
+							pushProjectEvent(["editTask", { ...task, projectId, completed: false }], projects),
 						);
 					}}
 				>
@@ -127,8 +130,8 @@ export default function TaskComponent({
 						src="/check_box.svg"
 						alt="complete box"
 					/>
-				</div>
-			</SecondaryListItem>
+				</div >
+			</SecondaryListItem >
 		);
 
 	return (
@@ -139,7 +142,7 @@ export default function TaskComponent({
 				onClick={(e) => {
 					e.stopPropagation();
 					dispatch(
-						editTask({ ...task, projectId: projectId, completed: true }),
+						pushProjectEvent(["editTask", { ...task, projectId, completed: true }], projects),
 					);
 				}}
 			>

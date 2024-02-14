@@ -12,13 +12,9 @@ import { ReactNode, useState } from "react";
 import { SecondaryListItemButton } from "./listItems";
 import SubmitCancel from "./SubmitCancel";
 import SecondaryButton from "./SecondaryButton";
-import { useDispatch } from "react-redux";
-import {
-	addLabel,
-	createTask,
-	deleteLabel,
-	editTask,
-} from "../_lib/slices/projectsSlice";
+import { pushProjectEvent } from "../_lib/slices/projectsSlice";
+import { useAppDispatch } from "../_lib/hooks";
+import useProjects from "../_lib/useProjects";
 
 function nullEmptyString(input?: string): string | undefined {
 	if (input == "") return undefined;
@@ -131,7 +127,8 @@ export function AddLabelForm({
 	task: Task;
 	projectId: number;
 }) {
-	const dispatch = useDispatch();
+	const dispatch = useAppDispatch();
+	const projects = useProjects();
 	return (
 		<Formik
 			initialValues={{ name: "" }}
@@ -147,7 +144,7 @@ export function AddLabelForm({
 			}}
 			onSubmit={(values, { resetForm, setSubmitting }) => {
 				dispatch(
-					addLabel({ projectId: projectId, name: values.name, id: task.id }),
+					pushProjectEvent(["addLabel", { projectId, name: values.name, id: task.id }], projects),
 				);
 				setSubmitting(false);
 				resetForm();
@@ -211,7 +208,8 @@ export function TaskEditing({
 	projectId: number;
 }) {
 	const [addingLabel, setAddingLabel] = useState(false);
-	const dispatch = useDispatch();
+	const dispatch = useAppDispatch();
+	const projects = useProjects();
 	return (
 		<div>
 			<div>
@@ -220,14 +218,14 @@ export function TaskEditing({
 					task={task}
 					close={close}
 					onSubmit={(data) =>
-						dispatch(editTask({ ...data, projectId: projectId }))
+						dispatch(pushProjectEvent(["editTask", { ...data, projectId }], projects))
 					}
 				>
 					<Labels
 						labels={task.labels}
 						onClick={(label) =>
 							dispatch(
-								deleteLabel({ id: task.id, name: label, projectId: projectId }),
+								pushProjectEvent(["deleteLabel", { id: task.id, name: label, projectId: projectId }], projects)
 							)
 						}
 					>
@@ -247,7 +245,8 @@ export function TaskEditing({
 
 export default function TaskCreation({ projectId }: { projectId: number }) {
 	const [active, setActive] = useState(false);
-	const dispatch = useDispatch();
+	const dispatch = useAppDispatch();
+	const projects = useProjects()
 	if (active)
 		return (
 			<Form
@@ -260,16 +259,15 @@ export default function TaskCreation({ projectId }: { projectId: number }) {
 				}}
 				close={() => setActive(false)}
 				onSubmit={(task) =>
-					dispatch(
-						createTask({
+					dispatch(pushProjectEvent(
+						["createTask", {
 							projectId: projectId,
 							name: task.name,
 							description: task.description,
 							labels: task.labels,
 							dueTime: task.dueTime,
 							dueDate: task.dueDate,
-						}),
-					)
+						}], projects))
 				}
 			/>
 		);

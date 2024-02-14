@@ -13,7 +13,7 @@ import { handleClientPostReq } from "@/app/_server/handleClient";
 import { isOfProject } from "@/app/_server/isOfProject";
 import { UserSession } from "@/app/_lib/session";
 import { Connection, RowDataPacket } from "mysql2/promise";
-import { EventHandlers } from "@/app/_lib/sync";
+import { ServerEventHandlers } from "@/app/_lib/sync";
 
 const CREATE_TASK_STATEMENT =
 	"INSERT INTO task (project_id, id, name, description, archived, completed, due_date, due_time) VALUES (?, ?, ?, ?, false, false, ?, ?)";
@@ -142,7 +142,7 @@ async function deleteTask(
 	await db.execute(DELETE_TASK_LABELS_STATEMENT, [data.id]);
 }
 
-const handlers: EventHandlers<ProjectEvents, Connection, Promise<void>> = {
+const handlers: ServerEventHandlers<ProjectEvents, Connection, Promise<void>> = {
 	createTask: createTask,
 	deleteTask: deleteTask,
 	deleteLabel: deleteLabel,
@@ -182,7 +182,7 @@ async function getProjectHistorySince(
 	const data = rows as { id: number; event: string; data: any }[];
 
 	return data.map((d) => {
-		return [d.event, d.data];
+		return [d.event, d.data] as ProjectEvent;
 	});
 }
 
@@ -194,10 +194,9 @@ async function handleChanges(
 	for (const [event, data] of changes) {
 		await db.beginTransaction();
 		try {
-			const n = event as keyof (typeof handlers)
-			const handler = handlers[n];
+			const handler = handlers[event];
 			if (!handler) throw "invalid event " + event;
-			await handler(db, data);
+			await handler(db, data as any);
 			await addToProjectHistory(db, projectId, event, data);
 			await db.commit();
 		} catch (err) {

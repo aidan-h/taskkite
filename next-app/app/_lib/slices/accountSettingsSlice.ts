@@ -6,7 +6,7 @@ export const accountSettingsSlice = createSlice({
 	initialState: {
 		name: "null",
 		email: "null@null",
-	},
+	} as AccountSettings,
 	reducers: {
 		updateAccount: (_, action: PayloadAction<AccountSettings>) =>
 			action.payload,

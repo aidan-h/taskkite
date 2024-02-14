@@ -111,7 +111,7 @@ export const projectEventSchema = z.union([
 	z.tuple([z.literal("deleteLabel"), affectLabelSchema]),
 	z.tuple([z.literal("addLabel"), affectLabelSchema]),
 	z.tuple([z.literal("createProject"), nameSchema]),
-]);
+]) as ZodSchema<ProjectEvent>;
 
 export const syncRequestSchema = z.object({
 	projectId: idSchema,
@@ -143,13 +143,18 @@ export interface ProjectIdentifier {
 export interface ProjectData {
 	name: string;
 	tasks: Task[];
-	historyCount: number;
 	taskCount: number;
 }
+
+export type Project = ProjectData & ProjectIdentifier;
 
 export type AccountSettings = {
 	email: string;
 	name: string;
+};
+
+export type ProjectResponse = Project & {
+	historyCount: number,
 };
 
 export interface CreateProjectResponse {
@@ -159,6 +164,6 @@ export interface CreateProjectResponse {
 export type AppData = AccountSettings & {
 	projects: {
 		count: number;
-		data: (ProjectIdentifier & ProjectData)[];
+		data: (ProjectResponse)[];
 	};
 };

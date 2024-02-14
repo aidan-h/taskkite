@@ -1,6 +1,6 @@
 import { Draft } from "@reduxjs/toolkit";
 
-export type Event<E, N extends keyof E = any> = [N, E[N]]
+export type Event<E> = [keyof E, E[keyof E]]
 export enum SyncState {
 	SYNCING,
 	SYNCED,
@@ -8,29 +8,33 @@ export enum SyncState {
 }
 
 export interface SyncData<T, E> {
-	data: T,
-	shadow: T,
+	client: HistoricData<T>,
+	shadow: HistoricData<T>,
 	queuedEvents: Event<E>[],
 	proccessingEvents: Event<E>[],
 	state: SyncState,
-	historyCount: number
 }
 
 export type Syncer<T, E> = (syncData: SyncData<T, E>, events: Event<E>[]) => Promise<Event<E>[]>;
 
 export type ApplyEvent<T, E> = (data: Draft<T>, event: Draft<E>) => void;
 
-export interface InitialState<T> {
+export interface HistoricData<T> {
 	data: T,
 	historyCount: number,
 }
 
-export function fromInitialState<T, E>(initialState: InitialState<T>): SyncData<T, E> {
+export interface InitialState<T> {
+	client: HistoricData<T>,
+	shadow?: HistoricData<T>,
+	syncState?: SyncState,
+}
+
+export function createSyncData<T, E>(initialState: InitialState<T>): SyncData<T, E> {
 	return {
-		data: initialState.data,
-		shadow: initialState.data,
-		state: SyncState.SYNCED,
-		historyCount: initialState.historyCount,
+		client: initialState.client,
+		shadow: initialState.client ?? initialState.shadow,
+		state: initialState.syncState ?? SyncState.SYNCED,
 		queuedEvents: [],
 		proccessingEvents: []
 	};
@@ -43,17 +47,18 @@ export function handleRejection<T, E>(syncData: Draft<SyncData<T, E>>) {
 }
 
 
-function applyEvent<T, E>(data: Draft<T>, eventHandlers: EventHandlers<E, T>, event: Draft<Event<E>>) {
+function applyEvent<T, E>(historicData: Draft<HistoricData<T>>, eventHandlers: EventHandlers<E, T>, event: Draft<Event<E>>) {
 	//@ts-ignore
 	const handler = eventHandlers[event[0]];
-	handler(data, event[1])
+	handler(historicData, event[1])
+	historicData.historyCount++;
 }
 
 export function updateClient<T, E>(eventHandlers: EventHandlers<E, T>, syncData: Draft<SyncData<T, E>>, events: Event<E>[]) {
 	syncData.state = SyncState.SYNCED;
 	events.forEach((e) => applyEvent(syncData.shadow, eventHandlers, e as Draft<Event<E>>));
-	syncData.data = { ...syncData.shadow };
-	syncData.queuedEvents.forEach((e) => applyEvent(syncData.data, eventHandlers, e));
+	syncData.client = { ...syncData.shadow };
+	syncData.queuedEvents.forEach((e) => applyEvent(syncData.client, eventHandlers, e));
 	syncData.proccessingEvents = [];
 }
 
@@ -64,8 +69,12 @@ export function moveQueuedEvents<T, E>(syncData: Draft<SyncData<T, E>>) {
 }
 
 
+export type ServerEventHandlers<E, T, R = void> = {
+	[Key in keyof E]: (db: T, event: E[Key]) => R;
+}
+
 export type EventHandlers<E, T, R = void> = {
-	[Key in keyof E]: (data: Draft<T>, event: E[Key]) => R;
+	[Key in keyof E]: (client: Draft<HistoricData<T>>, event: E[Key]) => R;
 }
 
 

@@ -32,7 +32,7 @@ export function deleteAccount() {
 	signOut();
 }
 
-export async function syncProject(req: SyncRequest): Promise<ProjectEvent[]> {
+export async function syncProjectFetch(req: SyncRequest): Promise<ProjectEvent[]> {
 	return await getData("/api/project/sync", req);
 }
 

@@ -1,39 +1,48 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { AppData } from "./schemas";
-import { ClientProject, SyncState, projectsSlice } from "./slices/projectsSlice";
+import { AppData, Project, ProjectEvents } from "./schemas";
+import { projectsSlice } from "./slices/projectsSlice";
 import { accountSettingsSlice } from "./slices/accountSettingsSlice";
+import { SyncData, SyncState, createSyncData } from "./sync";
+import { projectCountSlice } from "./slices/projectCountSlice";
 
 export function createStore(appData: AppData) {
 	return configureStore({
 		reducer: {
 			accountSettings: accountSettingsSlice.reducer,
 			projects: projectsSlice.reducer,
+			projectCount: projectCountSlice.reducer,
 		},
 		preloadedState: {
 			accountSettings: {
 				email: appData.email,
 				name: appData.name,
 			},
-			projects: {
-				projects: appData.projects.data.map((data) => {
-					return {
-						client: {
+			projects: appData.projects.data.map<SyncData<Project, ProjectEvents>>((data) => {
+				return createSyncData({
+					client: {
+						data: {
+							id: data.id,
+							owner: data.owner,
 							name: data.name,
 							tasks: data.tasks,
 							taskCount: data.taskCount,
-							historyCount: data.historyCount,
 						},
-						shadow: {
+						historyCount: data.historyCount,
+					},
+					shadow: {
+						data: {
+							id: data.id,
+							owner: data.owner,
 							name: data.name,
 							tasks: data.tasks,
 							taskCount: data.taskCount,
-							historyCount: data.historyCount,
 						},
-						syncState: SyncState.SYNCED,
-					} as ClientProject
-				}),
-				projectCount: appData.projects.count,
-			},
+						historyCount: data.historyCount,
+					},
+					syncState: SyncState.SYNCED,
+				})
+			}),
+			projectCount: appData.projects.count,
 		},
 	});
 }
