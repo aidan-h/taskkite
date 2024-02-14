@@ -73,6 +73,7 @@ function Form({
 						<input type="date" value={values.dueDate} onChange={handleChange} name="dueDate" className="mr-2" />
 						<input type="time" step={2} value={values.dueTime} onChange={handleChange} name="dueTime" className="mb-4" />
 						<input
+							autoFocus={true}
 							type="text"
 							className="mb-4 py-1 pl-2 w-full bg-slate-50 rounded shadow"
 							onChange={handleChange}
@@ -114,6 +115,7 @@ export function AddLabelForm({ task }: { task: Task }) {
 					onChange={handleChange}
 					value={values.name}
 					name="name"
+					autoFocus={true}
 				/>
 				{errors.name}
 				{isValid ? <SecondaryButton onClick={submitForm}>Add</SecondaryButton> : undefined}

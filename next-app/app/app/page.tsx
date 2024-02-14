@@ -2,7 +2,7 @@
 import { Formik, FormikErrors } from "formik";
 import { useRouter } from "next/navigation";
 import { useContext, useState } from "react";
-import { ProjectIdentifier, nameSchema } from "../_lib/data";
+import { nameSchema } from "../_lib/data";
 import { fromZodError } from "zod-validation-error";
 import { stringify } from "querystring";
 import { AppDataContext } from "../_lib/useUserData";
@@ -10,32 +10,11 @@ import { createProject } from "../_lib/api";
 import { CenterContainer } from "../_components/CenterContainer";
 import {
 	SecondaryListItemButton,
-	ListItemButton,
 } from "../_components/listItems";
 import SubmitCancel from "../_components/SubmitCancel";
 import { ProjectSync } from "../_lib/projectSync";
 import { ActiveTaskList } from "../_components/TaskList";
 import { ProjectContext, createProjectInterface } from "../_lib/ProjectContext";
-
-function ProjectItem({ project }: { project: ProjectIdentifier }) {
-	const router = useRouter();
-	return (
-		<ListItemButton onClick={() => router.push("/app/project/" + project.id)}>
-			{project.name}
-		</ListItemButton>
-	);
-}
-
-function ProjectList() {
-	const appData = useContext(AppDataContext);
-	return (
-		<div>
-			{appData.data.projects.map((project) => (
-				<ProjectItem key={project.id} project={project} />
-			))}
-		</div>
-	);
-}
 
 interface FormProps {
 	name: string;
@@ -80,6 +59,7 @@ function CreateProjectForm({
 					>
 						{err}
 						<input
+							autoFocus={true}
 							className="bg-slate-300 px-2 w-full mb-6 rounded py-2"
 							name="name"
 							type="text"
