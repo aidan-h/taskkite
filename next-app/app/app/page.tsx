@@ -29,7 +29,7 @@ function CreateProjectForm({
 			initialValues={{ name: "" }}
 			validate={(values) => {
 				const errors: FormikErrors<FormProps> = {};
-				const results = nameSchema.safeParse(values.name);
+				const results = nameSchema.safeParse(values.name.trim());
 				if (results.success == false)
 					errors.name = fromZodError(results.error).toString();
 				return errors;

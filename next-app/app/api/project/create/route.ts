@@ -7,6 +7,8 @@ import { z } from "zod";
 export const POST = handleClientPostReq(
 	z.object({ name: nameSchema }),
 	async (db, session, data) => {
-		return Response.json(await createProject(db, data.name, session.email, await getCount(db, "user", "project_count", "email", session.email)));
+		const name = data.name.trim();
+		nameSchema.parse(name);
+		return Response.json(await createProject(db, name, session.email, await getCount(db, "user", "project_count", "email", session.email)));
 	},
 );
