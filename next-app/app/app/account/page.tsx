@@ -1,7 +1,7 @@
 "use client";
 import { deleteAccount } from "@/app/_lib/api";
 import { nameSchema } from "@/app/_lib/data";
-import { ClientData, UserDataContext } from "@/app/_lib/useUserData";
+import { ClientData, AppDataContext } from "@/app/_lib/useUserData";
 import { Formik, FormikErrors } from "formik";
 import { useSession, signOut } from "next-auth/react";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
@@ -116,7 +116,7 @@ export default function AccountPage() {
   }
 
   return (
-    <UserDataContext.Consumer>
+    <AppDataContext.Consumer>
       {([userData, fetchUserData]) => {
         return userData ? (
           <Account
@@ -128,6 +128,6 @@ export default function AccountPage() {
           <></>
         );
       }}
-    </UserDataContext.Consumer>
+    </AppDataContext.Consumer>
   );
 }

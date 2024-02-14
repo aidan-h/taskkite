@@ -4,9 +4,9 @@ import { useRouter } from "next/navigation";
 import { useContext, useState } from "react";
 import { nameSchema } from "../_lib/data";
 import { fromZodError } from "zod-validation-error";
-import { createProjectAPI } from "../_lib/api";
 import { stringify } from "querystring";
-import { Project, UserDataContext } from "../_lib/useUserData";
+import { AppDataContext } from "../_lib/useUserData";
+import { Project, createProject } from "../_lib/api";
 
 function ProjectItem({ project }: { project: Project }) {
   const router = useRouter();
@@ -20,10 +20,10 @@ function ProjectItem({ project }: { project: Project }) {
 }
 
 function ProjectList() {
-  const [userData] = useContext(UserDataContext);
+  const [userData] = useContext(AppDataContext);
   return (
     <>
-      {userData.projects.map((project) => (
+      {userData.data.projects.map((project) => (
         <ProjectItem key={project.id} project={project} />
       ))}
     </>
@@ -40,7 +40,7 @@ function CreateProjectForm({
   setCreateProject: (value: boolean) => void;
 }) {
   const [err, setErr] = useState(null as null | string);
-  const [, updateUserData] = useContext(UserDataContext);
+  const [, updateUserData] = useContext(AppDataContext);
 
   return (
     <Formik
@@ -53,7 +53,7 @@ function CreateProjectForm({
         return errors;
       }}
       onSubmit={(values, { setSubmitting }) => {
-        createProjectAPI(values.name)
+        createProject(values.name)
           .then(() => {
             updateUserData();
             setSubmitting(false);

@@ -4,10 +4,10 @@ import { descriptionSchema, nameSchema } from "@/app/_lib/data";
 import { validateInputValue } from "@/app/_lib/formikHelpers";
 import { Formik, FormikErrors } from "formik";
 import { useContext, useState } from "react";
-import { UserDataContext } from "../_lib/useUserData";
+import { AppDataContext } from "../_lib/useUserData";
 
 function Form({ id, close }: { id: number; close: () => void }) {
-  const [, update] = useContext(UserDataContext);
+  const [, update] = useContext(AppDataContext);
   return (
     <Formik
       validate={(values) => {

@@ -1,40 +1,37 @@
 "use client";
 import { signOut } from "next-auth/react";
-import { SyncRequest, Task, UserEvent } from "./data";
+import {
+  SyncRequest,
+  ClientEvent,
+  AppData,
+  Project,
+  AffectProject,
+} from "./data";
 
 async function getData<T, D>(url: string, data: D): Promise<T> {
-	const resp = await fetch(url, { body: JSON.stringify(data), method: "POST" });
-	const text = await resp.text();
-	if (resp.status == 200) return JSON.parse(text) as T;
-	throw text;
+  const resp = await fetch(url, { body: JSON.stringify(data), method: "POST" });
+  const text = await resp.text();
+  if (resp.status == 200) return JSON.parse(text) as T;
+  throw text;
 }
 
 export async function createProject(name: string) {
-	await getData("/api/project/create", { name: name });
+  await getData("/api/project/create", { name: name });
 }
 
 export function deleteAccount() {
-	fetch("/api/user/delete", { method: "POST" }).catch(console.error);
-	signOut();
+  getData("/api/deleteAccount", {}).catch(console.error);
+  signOut();
 }
 
-export interface Project {
-	id: number;
-	owner: string;
-	name: string;
-	tasks: Task[];
-}
-
-export interface AppData {
-	email: string;
-	name: string;
-	projects: Project[];
-}
-
-export async function syncAppData(req: SyncRequest): Promise<UserEvent[]> {
-	return await getData("/api/sync", req);
+export async function syncProject(req: SyncRequest): Promise<ClientEvent[]> {
+  return await getData("/api/project/sync", req);
 }
 
 export async function getAppData(): Promise<AppData> {
-	return await getData("/api/appData", {});
+  return await getData("/api/appData", {});
+}
+
+export async function getProject(req: AffectProject): Promise<Project> {
+  return await getData("/api/project/get", req);
 }

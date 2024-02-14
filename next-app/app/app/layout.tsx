@@ -1,16 +1,16 @@
 "use client";
 import { useRouter } from "next/navigation";
-import useUserData, { ClientData, UserDataContext } from "../_lib/useUserData";
+import useClientData, { ClientData, AppDataContext } from "../_lib/useUserData";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const userData = useUserData(useRouter());
+  const userData = useClientData(useRouter());
   if (userData[0]) {
     return (
-      <UserDataContext.Provider
+      <AppDataContext.Provider
         value={userData as [ClientData, () => undefined]}
       >
         {children}
-      </UserDataContext.Provider>
+      </AppDataContext.Provider>
     );
   }
   return <p>Loading user data...</p>;
