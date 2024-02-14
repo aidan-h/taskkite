@@ -62,6 +62,12 @@ function TaskComponent({ task, openTask }: { task: Task; openTask: () => void })
 			<SecondaryListItem
 				onClick={() => editTask({ id: task.id, completed: false })}>
 				{b}
+				<button
+					className="absolute left-2 top-4"
+					onClick={(e) => { e.stopPropagation(); editTask({ id: task.id, completed: false }) }}
+				>
+					<Image width={20} height={20} src="/check_box.svg" alt="complete box" />
+				</button>
 			</SecondaryListItem>
 		);
 
