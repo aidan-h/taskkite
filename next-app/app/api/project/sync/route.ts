@@ -90,7 +90,6 @@ async function editTask(
 	db: Connection,
 	data: EditTaskEvent,
 ) {
-	console.log(data);
 	let statement = "UPDATE task SET ";
 	const fields = TASK_FIELDS.filter(([field]) => data[field] != undefined);
 	let values = fields.map(([field]) => data[field] === undefined ? null : data[field]);
@@ -101,11 +100,9 @@ async function editTask(
 	}
 	const [, dbField] = fields[fields.length - 1];
 	statement += dbField + " = ? WHERE project_id = ? AND id = ?";
-	//TODO this is WRONG!
 	values.push(data.projectId);
 	values.push(data.id);
 
-	console.log(statement, values);
 	await db.execute(statement, values);
 	if (data.labels)
 		await addLabels(db, data.projectId, data.id, data.labels);

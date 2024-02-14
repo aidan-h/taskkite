@@ -109,7 +109,7 @@ export const projectEventSchemas: ProjectEventSchemas = {
 
 export const projectEventSchema = z.union([
 	z.tuple([z.literal("createTask"), createTaskSchema]),
-	z.tuple([z.literal("editTask"), taskSchema]),
+	z.tuple([z.literal("editTask"), editTaskSchema]),
 	z.tuple([z.literal("deleteTask"), affectTaskSchema]),
 	z.tuple([z.literal("deleteLabel"), affectLabelSchema]),
 	z.tuple([z.literal("addLabel"), affectLabelSchema]),

@@ -29,6 +29,7 @@ export const clientProjectEventHandlers: EventHandlers<ProjectEvents, Project> =
 		if (!task) return;
 		const fields: (keyof Task & keyof EditTaskEvent)[] = [
 			"name",
+			"labels",
 			"description",
 			"archived",
 			"completed",
