@@ -54,7 +54,7 @@ async function getProject(db: Connection, projectId: number): Promise<Project> {
 		archived: number;
 		completed: number;
 		due_date: Date | null,
-		due_time: Date | null,
+		due_time: string | null,
 	}[];
 
 	if (projectRow == undefined) throw "couldn't find project " + projectId;
@@ -65,7 +65,7 @@ async function getProject(db: Connection, projectId: number): Promise<Project> {
 		tasks.push({
 			name: row.name,
 			id: row.id,
-			dueDate: row.due_date ?? undefined,
+			dueDate: row.due_date ? row.due_date.toISOString().slice(0, 10) : undefined,
 			dueTime: row.due_time ?? undefined,
 			archived: parseSQLBool(row.archived),
 			description: row.description,

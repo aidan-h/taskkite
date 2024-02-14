@@ -26,7 +26,7 @@ function TaskWidget({ task, openTask }: { task: Task; openTask: () => void }) {
 	const b = <>
 		<h2 className="text-md text-left">{task.name}</h2>
 		<Labels labels={task.labels} onClick={() => { }} />
-		<p className="text-left">{task.dueDate ? <div>{task.dueDate.toString() + " " + task.dueTime?.toString()}</div> : undefined}</p>
+		{task.dueDate ? <p className="text-left">{new Date(task.dueDate.toString() + " " + task.dueTime?.toString()).toLocaleString()}</p> : undefined}
 		<p className="text-slate-500 text-sm text-left mb-2">
 			{task.description}
 		</p>

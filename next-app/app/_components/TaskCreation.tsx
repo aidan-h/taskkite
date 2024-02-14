@@ -14,6 +14,12 @@ import SubmitCancel from "./SubmitCancel";
 import { ProjectContext } from "../_lib/ProjectContext";
 import SecondaryButton from "./SecondaryButton";
 
+function nullEmptyString(input?: string): string | undefined {
+	if (input == "") return undefined
+	if (input) return input
+	return undefined
+}
+
 function Form({
 	close,
 	onSubmit,
@@ -43,12 +49,12 @@ function Form({
 			onSubmit={(values, { setSubmitting }) => {
 				onSubmit({
 					id: task.id,
-					dueDate: values.dueDate,
+					dueDate: nullEmptyString(values.dueDate),
 					archived: task.archived,
 					completed: task.completed,
 					labels: task.labels,
 					name: values.name,
-					dueTime: values.dueTime,
+					dueTime: nullEmptyString(values.dueTime),
 					description: values.description,
 				});
 				close();
