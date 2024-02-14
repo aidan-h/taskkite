@@ -40,10 +40,7 @@ async function setLabels(db: Connection, projectId: number, taskId: number, labe
 		return
 	}
 	const deleteQuery = (labels.map((_, index) => index + 1 == labels.length ? "?)" : "?, ") as string[]).reduce((prev, curr) => prev + curr);
-	const q = "DELETE FROM label WHERE project_id = ? AND task_id = ? AND NOT name in (" + deleteQuery;
-	const v = [projectId, taskId, ...labels];
-	console.log(q, v);
-	await db.execute(q, v);
+	await db.execute("DELETE FROM label WHERE project_id = ? AND task_id = ? AND NOT name in (" + deleteQuery, [projectId, taskId, ...labels]);
 	const query =
 		"INSERT IGNORE INTO label (project_id, task_id, name) VALUES" +
 		(labels.map((_, index) => index + 1 == labels.length ? "(?,?,?)" : "(?,?,?),") as string[]).reduce((prev, curr) => prev + curr)
