@@ -10,7 +10,7 @@ export const clientProjectEventHandlers: EventHandlers<ProjectEvents, Project> =
 	updateName: ({ data }, event) => {
 		data.name = event.name
 	},
-	createTask: ({ data, historyCount }, event) => {
+	createTask: ({ data }, event) => {
 		data.tasks.push(
 			{
 				completed: false,
@@ -18,7 +18,7 @@ export const clientProjectEventHandlers: EventHandlers<ProjectEvents, Project> =
 				name: event.name,
 				description: event.description,
 				labels: event.labels,
-				id: historyCount,
+				id: data.taskCount,
 				dueDate: event.dueDate,
 				dueTime: event.dueTime,
 			});

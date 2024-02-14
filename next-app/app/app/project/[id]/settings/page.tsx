@@ -7,6 +7,7 @@ import {
 	ListItemButton,
 } from "@/app/_components/listItems";
 import ProjectPageContext from "@/app/_lib/ProjectPageContext";
+import { deleteProject } from "@/app/_lib/api";
 import { useRouter } from "next/navigation";
 import { useContext, useState } from "react";
 import { useDispatch } from "react-redux";
@@ -31,6 +32,7 @@ function DeleteProject({ id }: { id: number }) {
 				confirmText="Are you sure you want to delete this project? It can't be undone!"
 				action={() => {
 					setDeleting(true);
+					deleteProject(id);
 					//TODO delete Project
 				}}
 			/>

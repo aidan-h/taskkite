@@ -47,7 +47,7 @@ export function handleRejection<T, E>(syncData: Draft<SyncData<T, E>>) {
 }
 
 
-function applyEvent<T, E>(historicData: Draft<HistoricData<T>>, eventHandlers: EventHandlers<E, T>, event: Draft<Event<E>>) {
+export function applyEvent<T, E>(historicData: Draft<HistoricData<T>>, eventHandlers: EventHandlers<E, T>, event: Draft<Event<E>>) {
 	//@ts-ignore
 	const handler = eventHandlers[event[0]];
 	handler(historicData, event[1])
@@ -78,10 +78,8 @@ export type EventHandlers<E, T, R = void> = {
 }
 
 
-export async function pushEvent<T, E>(event: Event<E>, syncData: SyncData<T, E>, syncer: Syncer<T, E>) {
-	if (syncData.state == SyncState.SYNCING)
-		return undefined
-	return await syncer(syncData, [...syncData.queuedEvents, event])
+export async function pushEvents<T, E>(syncData: SyncData<T, E>, syncer: Syncer<T, E>) {
+	return await syncer(syncData, syncData.proccessingEvents)
 }
 
 export function pushAndMoveQueuedEvents<T, E>(syncData: Draft<SyncData<T, E>>, event: Draft<Event<E>>) {

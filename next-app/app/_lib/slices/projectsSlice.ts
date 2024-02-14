@@ -4,17 +4,17 @@ import {
 } from "../schemas";
 import { ArrayPush, ArraySync, syncArraySlice } from "../syncSlice";
 import { clientProjectEventHandlers } from "../clientProjectEventHandlers";
-import { SyncData, Event, createSyncData, InitialState } from "../sync";
+import { SyncData, Event, createSyncData } from "../sync";
 import { createProjectFetch, syncProjectFetch } from "../api";
-import { Draft, PayloadAction, ReducerCreators } from "@reduxjs/toolkit";
+import { ReducerCreators } from "@reduxjs/toolkit";
 
-function n(
+function createReducers(
 	create: ReducerCreators<SyncData<Project, ProjectEvents>[]>,
 	sync: ArraySync<Project, ProjectEvents>,
 	push: ArrayPush<Project, ProjectEvents>,
 ) {
 	return {
-		createProject: create.asyncThunk(async (name: string, thunkApi) => {
+		createProject: create.asyncThunk(async (name: string, _) => {
 			return await createProjectFetch(name)
 		}, {
 			fulfilled: (state, action) => {
@@ -34,16 +34,16 @@ function n(
 		pushEvent: push,
 	}
 }
-export const projectsSlice = syncArraySlice<Project, ProjectEvents, "projects", ReturnType<typeof n>>("projects",
+export const projectsSlice = syncArraySlice<Project, ProjectEvents, "projects", ReturnType<typeof createReducers>>("projects",
 	[],
 	(syncData, events) => syncProjectFetch({
 		projectId: syncData.client.data.id,
-		index: syncData.client.historyCount,
+		index: syncData.shadow.historyCount,
 		changes: events,
 	}),
 	clientProjectEventHandlers,
 	(rootState) => (rootState as any).projects as SyncData<Project, ProjectEvents>[],
-	n
+	createReducers
 );
 
 
