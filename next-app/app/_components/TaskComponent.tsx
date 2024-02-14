@@ -83,7 +83,7 @@ function DueComponent({
 }
 
 function Labels({ labels }: { labels: string[] }) {
-	return labels.map((label) => <div key={label}>{label}</div>);
+	return labels.map((label) => <div className="inline text-sm mr-1 px-1 bg-indigo-500 text-zinc-50 rounded " key={label}>{label}</div>);
 }
 
 export default function TaskComponent({
@@ -99,8 +99,8 @@ export default function TaskComponent({
 	const projects = useProjects();
 	const due = getDueString(task);
 	const b = (
-		<div className="ml-6 relative">
-			<h2 className="text-md text-left">{task.name}</h2>
+		<div className="ml-6 text-left relative">
+			<h2 className="text-md">{task.name}</h2>
 			<Labels labels={task.labels} />
 			{due ? <DueComponent state={due[1]}>{due[0]}</DueComponent> : undefined}
 		</div>

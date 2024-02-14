@@ -34,8 +34,13 @@ async function getProjectHistoryCount(
 	return await getCount(db, "project", "history_count", "id", projectId);
 }
 
-async function addLabels(db: Connection, projectId: number, taskId: number, labels: string[]) {
-	if (labels.length == 0) return
+async function setLabels(db: Connection, projectId: number, taskId: number, labels: string[]) {
+	if (labels.length == 0) {
+		await db.execute("DELETE FROM label WHERE project_id = ? AND task_id = ?", [projectId, taskId]);
+		return
+	}
+	const deleteQuery = (labels.map((_, index) => index + 1 == labels.length ? "?)" : "?, ") as string[]).reduce((prev, curr) => prev + curr);
+	await db.execute("DELETE FROM label WHERE project_id = ? AND task_id = ? AND name in (" + deleteQuery, [projectId, taskId, ...labels]);
 	const query =
 		"INSERT IGNORE INTO label (project_id, task_id, name) VALUES" +
 		(labels.map((_, index) => index + 1 == labels.length ? "(?,?,?)" : "(?,?,?),") as string[]).reduce((prev, curr) => prev + curr)
@@ -105,7 +110,7 @@ async function editTask(
 
 	await db.execute(statement, values);
 	if (data.labels)
-		await addLabels(db, data.projectId, data.id, data.labels);
+		await setLabels(db, data.projectId, data.id, data.labels);
 }
 
 const DELETE_TASK_STATEMENT =
