@@ -1,1 +1,1 @@
-mysqldump --user root -p todo_app > dump.sql
+mysqldump --user root -d -p todo_app > dump.sql

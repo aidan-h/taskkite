@@ -31,15 +31,6 @@ CREATE TABLE `label` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `label`
---
-
-LOCK TABLES `label` WRITE;
-/*!40000 ALTER TABLE `label` DISABLE KEYS */;
-/*!40000 ALTER TABLE `label` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `member`
 --
 
@@ -52,15 +43,6 @@ CREATE TABLE `member` (
   PRIMARY KEY (`project_id`,`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `member`
---
-
-LOCK TABLES `member` WRITE;
-/*!40000 ALTER TABLE `member` DISABLE KEYS */;
-/*!40000 ALTER TABLE `member` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `project`
@@ -81,15 +63,6 @@ CREATE TABLE `project` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `project`
---
-
-LOCK TABLES `project` WRITE;
-/*!40000 ALTER TABLE `project` DISABLE KEYS */;
-/*!40000 ALTER TABLE `project` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `project_history`
 --
 
@@ -104,15 +77,6 @@ CREATE TABLE `project_history` (
   PRIMARY KEY (`project_id`,`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `project_history`
---
-
-LOCK TABLES `project_history` WRITE;
-/*!40000 ALTER TABLE `project_history` DISABLE KEYS */;
-/*!40000 ALTER TABLE `project_history` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `task`
@@ -136,15 +100,6 @@ CREATE TABLE `task` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `task`
---
-
-LOCK TABLES `task` WRITE;
-/*!40000 ALTER TABLE `task` DISABLE KEYS */;
-/*!40000 ALTER TABLE `task` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `task_history`
 --
 
@@ -163,15 +118,6 @@ CREATE TABLE `task_history` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `task_history`
---
-
-LOCK TABLES `task_history` WRITE;
-/*!40000 ALTER TABLE `task_history` DISABLE KEYS */;
-/*!40000 ALTER TABLE `task_history` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `user`
 --
 
@@ -185,16 +131,6 @@ CREATE TABLE `user` (
   PRIMARY KEY (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `user`
---
-
-LOCK TABLES `user` WRITE;
-/*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES ('aidanhammond2003@gmail.com','Aidan Ha',0);
-/*!40000 ALTER TABLE `user` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -205,4 +141,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-02-07 10:12:23
+-- Dump completed on 2024-02-09 10:17:18
