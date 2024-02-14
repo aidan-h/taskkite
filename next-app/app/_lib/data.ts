@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { ZodObject, z } from "zod";
 
 export const nameSchema = z.string().min(1, { message: "name can't be empty" }).max(20, { message: "name can't be more than 20 characters" }).trim();
 export const descriptionSchema = z.string().max(200).trim();
@@ -11,6 +11,13 @@ export interface EditTaskQuery {
 	projectId: number;
 	id: number;
 }
+
+export const createTaskSchema = z.object({
+	id: z.number(),
+	name: nameSchema,
+	description: descriptionSchema,
+});
+
 
 export interface Task {
 	projectId: number;

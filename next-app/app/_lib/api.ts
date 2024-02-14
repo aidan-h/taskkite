@@ -12,6 +12,10 @@ export async function getProject(id: number): Promise<SharedProject> {
 	return await getData("/api/project/get", { id: id });
 }
 
+export async function createTask(projectId: number, name: string, description: string) {
+	await getData("/api/project/task/create", { id: projectId, name: name, description: description })
+}
+
 export async function getProjectTasks(id: number): Promise<Task[]> {
 	return await getData("/api/project/tasks", { id: id });
 }

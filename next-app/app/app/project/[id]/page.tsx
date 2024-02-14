@@ -7,12 +7,14 @@ import { useEffect, useState } from "react";
 export default function Page({ params }: { params: { id: string } }) {
 	const projectId = parseInt(params.id)
 	const [tasks, setTasks] = useState(null as null | Task[] | Error);
-	useEffect(() => {
+	function updateTasks() {
 		getProjectTasks(projectId).then((v) => setTasks(v), (err) => {
 			console.error(err)
 			setTasks(err)
 		});
-	}, [])
+	}
+
+	useEffect(updateTasks, [])
 
 	if (tasks instanceof Error) {
 		return <div>Error loading tasks</div>
@@ -20,7 +22,7 @@ export default function Page({ params }: { params: { id: string } }) {
 
 	if (tasks) {
 		return <div>Project {params.id}
-			<TaskList tasks={tasks}></TaskList>
+			<TaskList id={projectId} tasks={tasks}></TaskList>
 		</div>
 	}
 
