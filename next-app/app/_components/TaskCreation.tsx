@@ -5,20 +5,21 @@ import {
 	Task,
 	descriptionSchema,
 	nameSchema,
-} from "@/app/_lib/data";
+} from "@/app/_lib/schemas";
 import { validateInputValue } from "@/app/_lib/formikHelpers";
 import { Formik, FormikErrors } from "formik";
 import { ReactNode, useState } from "react";
 import { SecondaryListItemButton } from "./listItems";
 import SubmitCancel from "./SubmitCancel";
 import SecondaryButton from "./SecondaryButton";
-import { useDispatch } from "react-redux";
-import { addLabel, createTask, deleteLabel, editTask } from "../_lib/slices/projectsSlice";
+import { pushProjectEvent } from "../_lib/slices/projectsSlice";
+import { useAppDispatch } from "../_lib/hooks";
+import useProjects from "../_lib/useProjects";
 
 function nullEmptyString(input?: string): string | undefined {
-	if (input == "") return undefined
-	if (input) return input
-	return undefined
+	if (input == "") return undefined;
+	if (input) return input;
+	return undefined;
 }
 
 function Form({
@@ -32,7 +33,7 @@ function Form({
 	text: string;
 	close: () => void;
 	onSubmit: (task: Task) => void;
-	children?: ReactNode,
+	children?: ReactNode;
 }) {
 	return (
 		<Formik
@@ -61,16 +62,17 @@ function Form({
 				close();
 				setSubmitting(false);
 			}}
-			initialValues={{ name: task.name, dueDate: task.dueDate, dueTime: task.dueTime, description: task.description }}
+			initialValues={{
+				name: task.name,
+				dueDate: task.dueDate,
+				dueTime: task.dueTime,
+				description: task.description,
+			}}
 		>
 			{({ handleSubmit, submitForm, handleChange, values, errors }) => (
-				<div
-					className="shadow-lg bg-zinc-50 dark:bg-zinc-700 mb-4 relative rounded p-6"
-				>
+				<div className="shadow-lg bg-zinc-50 dark:bg-zinc-700 mb-4 relative rounded p-6">
 					{children}
-					<form
-						onSubmit={handleSubmit}
-					>
+					<form onSubmit={handleSubmit}>
 						<input
 							autoFocus={true}
 							type="text"
@@ -81,8 +83,21 @@ function Form({
 						/>
 						<br />
 						{errors.name}
-						<input type="date" value={values.dueDate} onChange={handleChange} name="dueDate" className="mr-2 px-1 rounded dark:bg-zinc-600" />
-						<input type="time" step={2} value={values.dueTime} onChange={handleChange} name="dueTime" className="mb-4 px-1 rounded dark:bg-zinc-600" />
+						<input
+							type="date"
+							value={values.dueDate}
+							onChange={handleChange}
+							name="dueDate"
+							className="mr-2 px-1 rounded dark:bg-zinc-600"
+						/>
+						<input
+							type="time"
+							step={2}
+							value={values.dueTime}
+							onChange={handleChange}
+							name="dueTime"
+							className="mb-4 px-1 rounded dark:bg-zinc-600"
+						/>
 						<textarea
 							className="w-full pl-2 mb-10 bg-zinc-50 dark:bg-zinc-600 rounded shadow"
 							onChange={handleChange}
@@ -91,7 +106,11 @@ function Form({
 						/>
 						{errors.description}
 						<br />
-						<SubmitCancel submit={submitForm} cancel={close} submitText={text} />
+						<SubmitCancel
+							submit={submitForm}
+							cancel={close}
+							submitText={text}
+						/>
 					</form>
 				</div>
 			)}
@@ -101,62 +120,122 @@ function Form({
 export type AddLabel = (e: AddLabelEvent) => void;
 export type DeleteLabel = (e: DeleteLabelEvent) => void;
 
-export function AddLabelForm({ task, projectId }: { task: Task, projectId: number }) {
-	const dispatch = useDispatch()
-	return <Formik initialValues={{ name: "" }} validate={(values) => {
-		let errors: FormikErrors<{ name: string }> = {}
-		if (task.labels && task.labels.find((label) => label == values.name) != undefined)
-			errors.name = "duplicate label"
-		validateInputValue(nameSchema, values.name, errors, "name");
-		return errors
-	}} onSubmit={(values, { resetForm, setSubmitting }) => { dispatch(addLabel({ projectId: projectId, name: values.name, id: task.id })); setSubmitting(false); resetForm() }}>
-		{({ values, handleChange, isValid, submitForm, errors, handleSubmit }) => (
-			<form onSubmit={handleSubmit} className="inline">
-				<input
-					type="text"
-					className="mr-2 text-sm border-none focus:border-none pl-2 w-14 bg-zinc-50 dark:bg-zinc-600 rounded shadow"
-					onChange={handleChange}
-					value={values.name}
-					name="name"
-					autoFocus={true}
-				/>
-				{errors.name}
-				{isValid ? <SecondaryButton onClick={submitForm}>Add</SecondaryButton> : undefined}
-			</form>
-		)}
-	</Formik>
+export function AddLabelForm({
+	task,
+	projectId,
+}: {
+	task: Task;
+	projectId: number;
+}) {
+	const dispatch = useAppDispatch();
+	const projects = useProjects();
+	return (
+		<Formik
+			initialValues={{ name: "" }}
+			validate={(values) => {
+				let errors: FormikErrors<{ name: string }> = {};
+				if (
+					task.labels &&
+					task.labels.find((label) => label == values.name) != undefined
+				)
+					errors.name = "duplicate label";
+				validateInputValue(nameSchema, values.name, errors, "name");
+				return errors;
+			}}
+			onSubmit={(values, { resetForm, setSubmitting }) => {
+				dispatch(
+					pushProjectEvent(["addLabel", { projectId, name: values.name, id: task.id }], projects),
+				);
+				setSubmitting(false);
+				resetForm();
+			}}
+		>
+			{({
+				values,
+				handleChange,
+				isValid,
+				submitForm,
+				errors,
+				handleSubmit,
+			}) => (
+				<form onSubmit={handleSubmit} className="inline">
+					<input
+						type="text"
+						className="mr-2 text-sm border-none focus:border-none pl-2 w-14 bg-zinc-50 dark:bg-zinc-600 rounded shadow"
+						onChange={handleChange}
+						value={values.name}
+						name="name"
+						autoFocus={true}
+					/>
+					{errors.name}
+					{isValid ? (
+						<SecondaryButton onClick={submitForm}>Add</SecondaryButton>
+					) : undefined}
+				</form>
+			)}
+		</Formik>
+	);
 }
 
-export function Labels({ labels, children, onClick }: { children?: ReactNode, labels?: string[], onClick: (name: string) => void }) {
-	return labels
-		? <div className="text-left mb-2">{labels.map((label) => (
-			<SecondaryButton
-				key={label}
-				onClick={() => onClick(label)}
-			>
-				{label}
-			</SecondaryButton>
-		))}{children}</div>
-		: undefined
+export function Labels({
+	labels,
+	children,
+	onClick,
+}: {
+	children?: ReactNode;
+	labels?: string[];
+	onClick: (name: string) => void;
+}) {
+	return labels ? (
+		<div className="text-left mb-2">
+			{labels.map((label) => (
+				<SecondaryButton key={label} onClick={() => onClick(label)}>
+					{label}
+				</SecondaryButton>
+			))}
+			{children}
+		</div>
+	) : undefined;
 }
 
 export function TaskEditing({
 	task,
 	close,
-	projectId
+	projectId,
 }: {
 	close: () => void;
 	task: Task;
-	projectId: number,
+	projectId: number;
 }) {
 	const [addingLabel, setAddingLabel] = useState(false);
-	const dispatch = useDispatch();
+	const dispatch = useAppDispatch();
+	const projects = useProjects();
 	return (
 		<div>
 			<div>
-				<Form text="Save" task={task} close={close} onSubmit={(data) => dispatch(editTask({ ...data, projectId: projectId }))}>
-					<Labels labels={task.labels} onClick={(label) => dispatch(deleteLabel({ id: task.id, name: label, projectId: projectId }))}>
-						{addingLabel ? <AddLabelForm projectId={projectId} task={task} /> : <SecondaryButton onClick={() => setAddingLabel(true)}>+</SecondaryButton>}
+				<Form
+					text="Save"
+					task={task}
+					close={close}
+					onSubmit={(data) =>
+						dispatch(pushProjectEvent(["editTask", { ...data, projectId }], projects))
+					}
+				>
+					<Labels
+						labels={task.labels}
+						onClick={(label) =>
+							dispatch(
+								pushProjectEvent(["deleteLabel", { id: task.id, name: label, projectId: projectId }], projects)
+							)
+						}
+					>
+						{addingLabel ? (
+							<AddLabelForm projectId={projectId} task={task} />
+						) : (
+							<SecondaryButton onClick={() => setAddingLabel(true)}>
+								+
+							</SecondaryButton>
+						)}
 					</Labels>
 				</Form>
 			</div>
@@ -166,7 +245,8 @@ export function TaskEditing({
 
 export default function TaskCreation({ projectId }: { projectId: number }) {
 	const [active, setActive] = useState(false);
-	const dispatch = useDispatch();
+	const dispatch = useAppDispatch();
+	const projects = useProjects()
 	if (active)
 		return (
 			<Form
@@ -179,14 +259,15 @@ export default function TaskCreation({ projectId }: { projectId: number }) {
 				}}
 				close={() => setActive(false)}
 				onSubmit={(task) =>
-					dispatch(createTask({
-						projectId: projectId,
-						name: task.name,
-						description: task.description,
-						labels: task.labels,
-						dueTime: task.dueTime,
-						dueDate: task.dueDate,
-					}))
+					dispatch(pushProjectEvent(
+						["createTask", {
+							projectId: projectId,
+							name: task.name,
+							description: task.description,
+							labels: task.labels,
+							dueTime: task.dueTime,
+							dueDate: task.dueDate,
+						}], projects))
 				}
 			/>
 		);

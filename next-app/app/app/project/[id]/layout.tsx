@@ -1,10 +1,7 @@
 "use client";
 
-import Descriptor from "@/app/_components/Descriptor";
-import Hero from "@/app/_components/Hero";
-import SyncStatus from "@/app/_components/SyncStatus";
-import { useAppSelector } from "@/app/_lib/hooks";
-import ProjectPageContext from "@/app/_lib/slices/ProjectPageContext";
+import ProjectPageContext from "@/app/_lib/ProjectPageContext";
+import useProjects from "@/app/_lib/useProjects";
 
 export default function ProjectLayout({
 	params,
@@ -14,25 +11,16 @@ export default function ProjectLayout({
 	children: React.ReactNode;
 }) {
 	const projectId = parseInt(params.id);
-	const projects = useAppSelector((app) => app.projects);
-	const project = projects.find((p) => p.id == projectId)
+	const projects = useProjects();
+	const project = projects.find((p) => p.client.data.id == projectId);
 
-	if (!project)
-		return <div>Project not found</div>
-
-	if (project.data) {
-		return (
-			<ProjectPageContext.Provider
-				value={{ data: project.data, project: project }}
-			>
-				{children}
-			</ProjectPageContext.Provider>
-		);
-	}
+	if (!project) return <div>Project not found</div>;
 
 	return (
-		<Hero>
-			<Descriptor>Loading project</Descriptor>
-		</Hero>
+		<ProjectPageContext.Provider
+			value={project.client.data}
+		>
+			{children}
+		</ProjectPageContext.Provider>
 	);
 }

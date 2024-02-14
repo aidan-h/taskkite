@@ -7,7 +7,7 @@ import {
 	DeleteListItem,
 } from "@/app/_components/listItems";
 import { deleteAccount, editUser } from "@/app/_lib/api";
-import { nameSchema } from "@/app/_lib/data";
+import { nameSchema } from "@/app/_lib/schemas";
 import { useAppSelector } from "@/app/_lib/hooks";
 import { updateAccount } from "@/app/_lib/slices/accountSettingsSlice";
 import { Formik, FormikErrors } from "formik";
@@ -15,10 +15,9 @@ import { signOut } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useDispatch } from "react-redux";
 
-function Account(
-) {
+function Account() {
 	const accountSettings = useAppSelector((app) => app.accountSettings);
-	const router = useRouter()
+	const router = useRouter();
 	const dispatch = useDispatch();
 	return (
 		<CenterContainer>
@@ -34,10 +33,16 @@ function Account(
 					return errors;
 				}}
 				onSubmit={(values, { setSubmitting }) => {
-					editUser({ name: values.name }).then((_resp) => {
-						dispatch(updateAccount({ name: values.name, email: accountSettings.email }))
-						setSubmitting(false);
-					})
+					editUser({ name: values.name })
+						.then((_resp) => {
+							dispatch(
+								updateAccount({
+									name: values.name,
+									email: accountSettings.email,
+								}),
+							);
+							setSubmitting(false);
+						})
 						.catch((err) => console.error(err));
 				}}
 			>
@@ -62,7 +67,8 @@ function Account(
 							) : undefined}
 						</ListItem>
 						<ListItem>
-							<p className="text-left">{accountSettings.email}</p>						</ListItem>
+							<p className="text-left">{accountSettings.email}</p>{" "}
+						</ListItem>
 					</form>
 				)}
 			</Formik>
@@ -78,8 +84,5 @@ function Account(
 }
 
 export default function AccountPage() {
-	return (
-		<Account
-		></Account>
-	);
+	return <Account></Account>;
 }

@@ -1,4 +1,3 @@
-import { db } from "@/app/_server/mysql";
 import {
 	UserSession,
 	getSession,
@@ -7,6 +6,7 @@ import {
 import { Connection } from "mysql2/promise";
 import { NextRequest, NextResponse } from "next/server";
 import { ZodSchema } from "zod";
+import { db } from "./mysql";
 
 export function handleClientGetReq(
 	action: (db: Connection, session: UserSession) => Promise<Response>,

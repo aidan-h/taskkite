@@ -1,8 +1,6 @@
 import { ZodSchema, z } from "zod";
+import { Event } from "./sync";
 
-function createEventSchema<T>(name: string, schema: ZodSchema<T>) {
-	return z.tuple([z.literal(name), schema]);
-}
 export const nameSchema = z
 	.string()
 	.min(1, { message: "name can't be empty" })
@@ -14,14 +12,20 @@ export const descriptionSchema = z.string().max(200).trim().optional();
 /**
  * YYYY-MM-DD per MySQL spec
  * see https://stackoverflow.com/questions/2149680/regex-date-format-validation-on-java
-*/
-export const dueDateSchema = z.string().regex(/\d{4}-\d{2}-\d{2}/).optional()
+ */
+export const dueDateSchema = z
+	.string()
+	.regex(/\d{4}-\d{2}-\d{2}/)
+	.optional();
 
 /**
  * HH-MM-SS per MySQL spec
  * see https://stackoverflow.com/questions/8318236/regex-pattern-for-hhmmss-time-string
-*/
-export const dueTimeSchema = z.string().regex(/(?:(?:([01]?\d|2[0-3]):)?([0-5]?\d):)?([0-5]?\d)/).optional()
+ */
+export const dueTimeSchema = z
+	.string()
+	.regex(/(?:(?:([01]?\d|2[0-3]):)?([0-5]?\d):)?([0-5]?\d)/)
+	.optional();
 
 const taskBaseSchema = z.object({
 	name: nameSchema,
@@ -42,7 +46,7 @@ const idSchema = z.number().nonnegative().int();
 export const affectProjectSchema = z.object({
 	projectId: idSchema,
 });
-export type AffectProject = z.infer<typeof affectProjectSchema>
+export type AffectProject = z.infer<typeof affectProjectSchema>;
 
 const taskAndLabelsSchema = z
 	.object({
@@ -68,32 +72,59 @@ export const taskSchema = taskAfterBaseSchema
 	.merge(taskAndLabelsSchema)
 	.merge(taskIdSchema);
 export type Task = z.infer<typeof taskSchema>;
-const editTaskSchema = taskIdSchema.merge(taskAfterBaseSchema).merge(affectProjectSchema);
+const editTaskSchema = taskIdSchema
+	.merge(taskAfterBaseSchema)
+	.merge(affectProjectSchema);
+export const updateNameSchema = affectProjectSchema.merge(z.object({ name: nameSchema }));
 export type CreateTaskEvent = z.infer<typeof createTaskSchema>;
 export type EditTaskEvent = z.infer<typeof editTaskSchema>;
 export type DeleteLabelEvent = z.infer<typeof affectLabelSchema>;
 export type AddLabelEvent = DeleteLabelEvent;
 export type DeleteTaskEvent = z.infer<typeof affectTaskSchema>;
+export type UpdateNameEvent = z.infer<typeof updateNameSchema>
 
+export interface ProjectEvents {
+	updateName: UpdateNameEvent,
+	createTask: CreateTaskEvent,
+	editTask: EditTaskEvent,
+	deleteTask: DeleteTaskEvent,
+	addLabel: AddLabelEvent,
+	deleteLabel: DeleteLabelEvent
+}
 
-export const userEventSchema = z.union([
-	createEventSchema<CreateTaskEvent>("createTask", createTaskSchema),
-	createEventSchema<EditTaskEvent>("editTask", editTaskSchema),
-	createEventSchema<DeleteTaskEvent>("deleteTask", affectTaskSchema),
-	createEventSchema<DeleteLabelEvent>("deleteLabel", affectLabelSchema),
-	createEventSchema<AddLabelEvent>("addLabel", affectLabelSchema),
-]);
+export type ProjectEvent = Event<ProjectEvents>
 
-export type ClientEvent = z.infer<typeof userEventSchema>;
+export type ProjectEventSchemas = {
+	[Key in keyof ProjectEvents]: ZodSchema<ProjectEvents[Key]>
+}
+
+export const projectEventSchemas: ProjectEventSchemas = {
+	updateName: updateNameSchema,
+	createTask: createTaskSchema,
+	editTask: editTaskSchema,
+	deleteTask: affectTaskSchema,
+	deleteLabel: affectLabelSchema,
+	addLabel: affectLabelSchema,
+}
+
+export const projectEventSchema = z.union([
+	z.tuple([z.literal("createTask"), createTaskSchema]),
+	z.tuple([z.literal("editTask"), editTaskSchema]),
+	z.tuple([z.literal("deleteTask"), affectTaskSchema]),
+	z.tuple([z.literal("deleteLabel"), affectLabelSchema]),
+	z.tuple([z.literal("addLabel"), affectLabelSchema]),
+	z.tuple([z.literal("createProject"), nameSchema]),
+]) as ZodSchema<ProjectEvent>;
 
 export const syncRequestSchema = z.object({
 	projectId: idSchema,
 	index: idSchema,
-	changes: z.array(userEventSchema).optional(),
+	changes: z.array(projectEventSchema).optional(),
 });
+
 export type SyncRequest = z.infer<typeof syncRequestSchema>;
-export const editUserSchema = z.object({ name: nameSchema })
-export type EditUserRequest = z.infer<typeof editUserSchema>
+export const editUserSchema = z.object({ name: nameSchema });
+export type EditUserRequest = z.infer<typeof editUserSchema>;
 
 export const affectMemberSchema = z
 	.object({
@@ -110,23 +141,28 @@ export const editProjectSchema = z
 export interface ProjectIdentifier {
 	id: number;
 	owner: string;
-	name: string;
 }
 
 export interface ProjectData {
+	name: string;
 	tasks: Task[];
-	historyCount: number;
 	taskCount: number;
 }
+
+export type Project = ProjectData & ProjectIdentifier;
 
 export type AccountSettings = {
 	email: string;
 	name: string;
-}
-export interface CreateProjectResponse {
-	id: number;
-}
+};
+
+export type ProjectResponse = Project & {
+	historyCount: number,
+};
 
 export type AppData = AccountSettings & {
-	projects: ProjectIdentifier[];
-}
+	projects: {
+		count: number;
+		data: (ProjectResponse)[];
+	};
+};

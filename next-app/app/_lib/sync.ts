@@ -1,134 +1,88 @@
-"use client";
+import { Draft } from "@reduxjs/toolkit";
 
-import { useEffect, useState } from "react";
-
-export enum SyncStatus {
-	PENDING,
+export type Event<E> = [keyof E, E[keyof E]]
+export enum SyncState {
+	SYNCING,
 	SYNCED,
 	FAILED,
-	WAITING,
 }
 
-export function syncStatusText(status: SyncStatus): string {
-	if (status == SyncStatus.PENDING) return "Pending"
-	else if (status == SyncStatus.SYNCED) return "Synced"
-	return "Failed"
+export interface SyncData<T, E> {
+	client: HistoricData<T>,
+	shadow: HistoricData<T>,
+	queuedEvents: Event<E>[],
+	proccessingEvents: Event<E>[],
+	state: SyncState,
 }
 
-export interface SyncState<T> {
-	status: SyncStatus;
-	data: T | undefined;
+export type Syncer<T, E> = (syncData: SyncData<T, E>, events: Event<E>[]) => Promise<Event<E>[]>;
+
+export type ApplyEvent<T, E> = (data: Draft<T>, event: Draft<E>) => void;
+
+export interface HistoricData<T> {
+	data: T,
+	historyCount: number,
 }
 
-export interface SyncClient<T> {
-	fetch: () => void;
-	setState: (state: SyncState<T>) => void;
-	state: SyncState<T>;
+export interface InitialState<T> {
+	client: HistoricData<T>,
+	shadow?: HistoricData<T>,
+	syncState?: SyncState,
 }
 
-export function useSyncClient<T>(fetcher: () => Promise<T>): SyncClient<T> {
-	const [syncState, setSyncState] = useState({ status: SyncStatus.SYNCED, data: undefined } as SyncState<T>)
-	const fetch = createSyncFetch(syncState, setSyncState, fetcher);
-	useEffect(fetch, [])
-	return { setState: setSyncState, state: syncState, fetch: fetch }
+export function createSyncData<T, E>(initialState: InitialState<T>): SyncData<T, E> {
+	return {
+		client: initialState.client,
+		shadow: initialState.client ?? initialState.shadow,
+		state: initialState.syncState ?? SyncState.SYNCED,
+		queuedEvents: [],
+		proccessingEvents: []
+	};
 }
 
-export function createSyncFetch<T>(state: SyncState<T>, setState: (state: SyncState<T>) => void, fetcher: () => Promise<T>): () => void {
-	return () => {
-		if (state.status != SyncStatus.PENDING) {
-			setState({
-				status: SyncStatus.PENDING,
-				data: state.data,
-			});
-			fetcher()
-				.then((d) =>
-					setState({
-						status: SyncStatus.SYNCED,
-						data: d,
-					}),
-				)
-				.catch(() => setState({ status: SyncStatus.FAILED, data: state.data }));
-		}
-	}
+export function handleRejection<T, E>(syncData: Draft<SyncData<T, E>>) {
+	syncData.state = SyncState.FAILED
+	syncData.queuedEvents = syncData.proccessingEvents.concat(syncData.queuedEvents)
+	syncData.proccessingEvents = []
 }
 
-export interface Shadow<T, E> {
-	queuedEvents: E[];
-	data: T;
+
+export function applyEvent<T, E>(historicData: Draft<HistoricData<T>>, eventHandlers: EventHandlers<E, T>, event: Draft<Event<E>>) {
+	//@ts-ignore
+	const handler = eventHandlers[event[0]];
+	handler(historicData, event[1])
+	historicData.historyCount++;
 }
 
-export type PushEvent<E> = (event: E) => void;
-
-function pushEvents<T, E>(
-	state: SyncState<T>,
-	setState: (state: SyncState<T>) => void,
-	shadow: Shadow<T, E>,
-	sync: (events: E[], data: T) => Promise<E[]>,
-	applyEvent: (data: T, event: E) => T,
-) {
-	const events = shadow.queuedEvents;
-	shadow.queuedEvents = [];
-	setState({
-		data: state.data,
-		status: SyncStatus.PENDING,
-	});
-
-	sync(events, shadow.data)
-		.then((serverEvents) => {
-			serverEvents.forEach((event) => {
-				shadow.data = applyEvent(shadow.data, event);
-			});
-			setState({
-				status: SyncStatus.SYNCED,
-				data: structuredClone(shadow.data),
-			});
-		})
-		.catch((err) => {
-			console.error(err);
-			shadow.queuedEvents = events.concat(shadow.queuedEvents);
-			setState({
-				data: state.data,
-				status: SyncStatus.FAILED,
-			});
-		});
+export function updateClient<T, E>(eventHandlers: EventHandlers<E, T>, syncData: Draft<SyncData<T, E>>, events: Event<E>[]) {
+	syncData.state = SyncState.SYNCED;
+	events.forEach((e) => applyEvent(syncData.shadow, eventHandlers, e as Draft<Event<E>>));
+	syncData.client = { ...syncData.shadow };
+	syncData.queuedEvents.forEach((e) => applyEvent(syncData.client, eventHandlers, e));
+	syncData.proccessingEvents = [];
 }
 
-export function getPushEvent<T, E>(
-	sync: (events: E[], data: T) => Promise<E[]>,
-	state: SyncState<T>,
-	setState: (state: SyncState<T>) => void,
-	applyEvent: (data: T, event: E) => T,
-	shadow: Shadow<T, E> | undefined,
-	setShadow: (shadow: Shadow<T, E> | undefined) => void,
-): PushEvent<E> {
-	if (!shadow && state.data) {
-		setShadow({
-			data: state.data,
-			queuedEvents: [],
-		});
-	}
+export function moveQueuedEvents<T, E>(syncData: Draft<SyncData<T, E>>) {
+	syncData.proccessingEvents = syncData.queuedEvents;
+	syncData.queuedEvents = [];
+	syncData.state = SyncState.SYNCING
+}
 
-	if (
-		shadow &&
-		state.status == SyncStatus.SYNCED &&
-		shadow.queuedEvents.length > 0
-	) {
-		pushEvents(state, setState, shadow, sync, applyEvent);
-	}
 
-	return (event) => {
-		if (!state.data || !shadow) {
-			console.error("couldn't process event without data" + event);
-			return;
-		}
+export type ServerEventHandlers<E, T, R = void> = {
+	[Key in keyof E]: (db: T, event: E[Key]) => R;
+}
 
-		setState({
-			status: state.status,
-			data: applyEvent(state.data, event),
-		});
-		shadow.queuedEvents.push(event);
+export type EventHandlers<E, T, R = void> = {
+	[Key in keyof E]: (client: Draft<HistoricData<T>>, event: E[Key]) => R;
+}
 
-		if (state.status == SyncStatus.PENDING) return;
-		pushEvents(state, setState, shadow, sync, applyEvent);
-	}
+
+export async function pushEvents<T, E>(syncData: SyncData<T, E>, syncer: Syncer<T, E>) {
+	return await syncer(syncData, syncData.proccessingEvents)
+}
+
+export function pushAndMoveQueuedEvents<T, E>(syncData: Draft<SyncData<T, E>>, event: Draft<Event<E>>) {
+	syncData.queuedEvents.push(event);
+	moveQueuedEvents(syncData);
 }

@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth/next";
 import { NextApiRequest, NextApiResponse } from "next";
 import { NextRequest, NextResponse } from "next/server";
-import { authOptions } from "./auth";
+import { authOptions } from "../_server/auth";
 
 export const unauthenticatedResponse = new Response("Not authenticated", {
 	status: 400,

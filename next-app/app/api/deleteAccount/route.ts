@@ -1,6 +1,6 @@
 import { RowDataPacket } from "mysql2";
 import { Connection } from "mysql2/promise";
-import { handleClientGetReq } from "@/app/_lib/handleClient";
+import { handleClientGetReq } from "@/app/_server/handleClient";
 
 const GET_PROJECTS_ID_STATEMENT = `SELECT id FROM project WHERE owner = ?`;
 
@@ -40,5 +40,5 @@ async function deleteUser(db: Connection, email: string) {
 
 export const POST = handleClientGetReq(async (db, session) => {
 	await deleteUser(db, session.email);
-	return Response.json("Deleted account")
+	return Response.json("Deleted account");
 });

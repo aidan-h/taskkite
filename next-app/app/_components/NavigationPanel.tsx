@@ -5,7 +5,7 @@ import { useAppSelector } from "../_lib/hooks";
 
 export default function NavigationPanel() {
 	const router = useRouter();
-	const projects = useAppSelector((state) => state.projects)
+	const projects = useAppSelector((state) => state.projects);
 
 	return (
 		<div className="fixed border-b-8 sm:border-b-0 sm:border-r-8 border-indigo-400 bg-zinc-100 text-zinc-900 dark:bg-zinc-700 dark:text-zinc-50 top-0 w-screen sm:h-screen flex sm:block sm:w-40">
@@ -19,10 +19,10 @@ export default function NavigationPanel() {
 			{projects.map((project) => (
 				<button
 					className="sm:mx-4 font-medium invisible sm:visible"
-					key={project.id}
-					onClick={() => router.push("/app/project/" + project.id)}
+					key={project.client.data.id}
+					onClick={() => router.push("/app/project/" + project.client.data.id)}
 				>
-					{project.name}
+					{project.client.data.name}
 				</button>
 			))}
 		</div>

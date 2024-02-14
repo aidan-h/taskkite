@@ -9,6 +9,7 @@ import { Session } from "next-auth";
 import { AppStore, createStore } from "../_lib/store";
 import { Provider } from "react-redux";
 import { getAppData } from "../_lib/api";
+import SyncStatus from "../_components/SyncStatus";
 
 function Message({ children }: { children: ReactNode }) {
 	return (
@@ -21,13 +22,15 @@ function Message({ children }: { children: ReactNode }) {
 export default function AppLayout({ children }: { children: React.ReactNode }) {
 	const d = useSession();
 	const [store, setStore] = useState(undefined as AppStore | undefined);
-	let data: Session | null | undefined = null
-	if (d) data = d.data
+	let data: Session | null | undefined = null;
+	if (d) data = d.data;
 	const router = useRouter();
 
 	useEffect(() => {
 		if (data && !store) {
-			getAppData().then((appData) => setStore(createStore(appData))).catch(console.error);
+			getAppData()
+				.then((appData) => setStore(createStore(appData)))
+				.catch(console.error);
 		}
 	}, [store, data]);
 
@@ -43,13 +46,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
 	if (store) {
 		return (
-			<Provider
-				store={store}
-			>
-				<div className="sm:ml-40">
-					{children}
-				</div>
+			<Provider store={store}>
+				<div className="sm:ml-40">{children}</div>
 				<NavigationPanel />
+				<SyncStatus />
 			</Provider>
 		);
 	}
