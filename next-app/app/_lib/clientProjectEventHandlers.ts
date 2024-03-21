@@ -11,6 +11,7 @@ export const clientProjectEventHandlers: EventHandlers<ProjectEvents, Project> =
 		data.name = event.name
 	},
 	createTask: ({ data }, event) => {
+		data.taskCount++;
 		data.tasks.push(
 			{
 				completed: false,
@@ -22,7 +23,7 @@ export const clientProjectEventHandlers: EventHandlers<ProjectEvents, Project> =
 				dueDate: event.dueDate,
 				dueTime: event.dueTime,
 			});
-		data.taskCount++;
+		
 	},
 	editTask: ({ data }, event) => {
 		const task = data.tasks.find((task) => task.id == event.id);
