@@ -2,6 +2,9 @@
 **Technologies**
 NextJS, React, TypeScript, TailwindCSS, MySQL, Docker
 
+Presentation:
+https://youtu.be/0zSrwR1rJAc
+
 ## Features
 - CRUD tasks
 - Labels
